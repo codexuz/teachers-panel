@@ -40,7 +40,7 @@ const movieGenres = ['action', 'comedy', 'drama', 'horror', 'sci-fi']
 const movieTypes = ['movie', 'cartoon', 'series']
 
 // API Base URL
-const API_BASE_URL = 'https://app.impulselc.uz/api'
+const API_BASE_URL = 'https://impulse-impulse-app.jkturn.easypanel.host/api'
 
 // Generic API request function
 async function apiRequest(endpoint, options = {}) {
