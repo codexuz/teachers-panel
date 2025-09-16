@@ -1,6 +1,6 @@
 // API utility functions for handling HTTP requests
 
-const API_BASE_URL =  'https://impulse-app.jkturn.easypanel.host/api'
+const API_BASE_URL =  'https://backend.impulselc.uz/api'
 
 // Get token from localStorage
 const getAuthToken = () => {
