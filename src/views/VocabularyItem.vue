@@ -1,10 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { vocabularyAPI, vocabularyItemsAPI } from '@/utils/api.js'
+import { vocabularyAPI, vocabularyItemsAPI, uploadAPI } from '@/utils/api.js'
+import { createClient } from 'pexels'
 
 const route = useRoute()
 const router = useRouter()
+
+// Initialize Pexels API client
+const pexelsClient = createClient('x9JPjTC9LmpxAkisngyQTO371TsvHiwnGeg9wX75RuXJFzJx5KfCn1bI')
 
 // Reactive state
 const vocabularyItems = ref([])
@@ -20,9 +24,16 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const csvFile = ref(null)
 const csvFileInput = ref(null)
+const audioFile = ref(null)
+const audioFileInput = ref(null)
 const currentlyPlayingAudio = ref(null)
 const playingAudioUrl = ref(null)
 const audioValidationStatus = ref({})
+const searchImages = ref([])
+const isSearchingImages = ref(false)
+const searchImagesError = ref(null)
+const isUploadingAudio = ref(false)
+const uploadAudioProgress = ref(0)
 
 // Form data
 const itemForm = ref({
@@ -182,6 +193,51 @@ const deleteVocabularyItem = async (item) => {
   }
 }
 
+// Pexels API - Search for images related to a word
+const searchImagesForWord = async (word) => {
+  if (!word) {
+    searchImagesError.value = 'Please enter a word to search for images'
+    return
+  }
+  
+  try {
+    searchImagesError.value = null
+    isSearchingImages.value = true
+    searchImages.value = []
+    
+    // Search Pexels for images related to the word
+    const response = await pexelsClient.photos.search({ 
+      query: word, 
+      per_page: 8, // Get several options
+      size: 'medium'
+    })
+    
+    if (response && response.photos && response.photos.length > 0) {
+      searchImages.value = response.photos.map(photo => ({
+        id: photo.id,
+        url: photo.src.medium,
+        alt: photo.alt || word,
+        photographer: photo.photographer,
+        photographerUrl: photo.photographer_url
+      }))
+    } else {
+      searchImagesError.value = `No images found for "${word}"`
+    }
+  } catch (error) {
+    console.error('Error searching for images:', error)
+    searchImagesError.value = `Error searching for images: ${error.message || 'Unknown error'}`
+  } finally {
+    isSearchingImages.value = false
+  }
+}
+
+// Select an image from search results
+const selectImage = (image) => {
+  if (image && image.url) {
+    itemForm.value.image_url = image.url
+  }
+}
+
 // Navigation
 const goBackToSets = () => {
   router.push('/vocabulary')
@@ -273,33 +329,81 @@ const validateAudioUrl = async (url) => {
   }
 }
 
-// Auto-generate TTS audio URL function
-const generateTTSAudio = async (word) => {
-  if (!word || !word.trim()) {
-    alert('Please enter a word first')
+// Upload audio file
+const uploadAudioFile = async (file) => {
+  if (!file) {
+    alert('Please select an audio file first')
+    return
+  }
+
+  // Validate file type
+  const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/x-m4a', 'audio/aac']
+  if (!validAudioTypes.includes(file.type)) {
+    alert('Please select a valid audio file (MP3, WAV, OGG, M4A, or AAC)')
+    return
+  }
+
+  // Validate file size (10MB max)
+  const maxSizeInBytes = 10 * 1024 * 1024 // 10MB
+  if (file.size > maxSizeInBytes) {
+    alert(`File size exceeds 10MB. Please select a smaller file.`)
     return
   }
 
   try {
-    const encodedWord = encodeURIComponent(word.trim())
-    const audioUrl = `https://impulselc.uz/api/v1/tts?lang=en-au&text=${encodedWord}`
+    isUploadingAudio.value = true
+    uploadAudioProgress.value = 0
 
-    // Test if the audio URL works
-    const audio = new Audio()
-    audio.addEventListener('canplaythrough', () => {
-      itemForm.value.audio_url = audioUrl
-      validateAudioUrl(audioUrl)
-      console.log('TTS Audio URL generated successfully:', audioUrl)
+    // Use the uploadAPI with progress tracking
+    const result = await uploadAPI.uploadFile(file, {
+      onUploadProgress: (event) => {
+        if (event.lengthComputable) {
+          uploadAudioProgress.value = Math.round((event.loaded / event.total) * 100)
+        }
+      }
     })
-    audio.addEventListener('error', () => {
-      alert('Failed to generate TTS audio. Please try again or enter a different word.')
-    })
-    audio.src = audioUrl
+    
+    // Get the URL from response and set it to the audio_url field
+    if (result && result.url) {
+      itemForm.value.audio_url = result.url
+      validateAudioUrl(result.url)
+      console.log('Audio file uploaded successfully:', result.url)
+    } else {
+      throw new Error('Uploaded file URL not received from server')
+    }
+    
+    // Get the URL from response and set it to the audio_url field
+    if (result && result.url) {
+      itemForm.value.audio_url = result.url
+      validateAudioUrl(result.url)
+      console.log('Audio file uploaded successfully:', result.url)
+    } else {
+      throw new Error('Uploaded file URL not received from server')
+    }
+    
   } catch (error) {
-    console.error('Error generating TTS audio URL:', error)
-    alert('Error generating TTS audio URL')
+    console.error('Error uploading audio file:', error)
+    alert(`Error uploading audio file: ${error.message || 'Unknown error'}`)
+  } finally {
+    isUploadingAudio.value = false
+    uploadAudioProgress.value = 0
+    audioFile.value = null
+    if (audioFileInput.value) {
+      audioFileInput.value.value = ''
+    }
   }
 }
+
+// Handle audio file input change
+const handleAudioFileChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    audioFile.value = file
+    uploadAudioFile(file)
+  }
+}
+
+const API_BASE_URL = "https://backend.impulselc.uz/api"
 
 // Generate Oxford dictionary audio URL
 const generateOxfordAudio = (word) => {
@@ -486,8 +590,29 @@ const importCSV = async () => {
       return
     }
 
-    // Import items using bulk import API
-    await vocabularyItemsAPI.bulkImport(set_id.value, items)
+    // Track success and failure counts
+    let successCount = 0
+    let failureCount = 0
+    
+    // Create items one by one instead of using bulk import
+    for (const item of items) {
+      try {
+        // Ensure set_id is properly set
+        item.set_id = set_id.value
+        
+        // Create vocabulary item
+        await vocabularyItemsAPI.create(item)
+        successCount++
+      } catch (itemError) {
+        console.error('Error creating vocabulary item:', itemError, item)
+        failureCount++
+      }
+      
+      // Update progress (optional)
+      if ((successCount + failureCount) % 5 === 0) {
+        console.log(`Import progress: ${successCount + failureCount}/${items.length}`)
+      }
+    }
 
     // Reload the vocabulary items
     await loadVocabularyItems()
@@ -495,7 +620,11 @@ const importCSV = async () => {
     // Close modal and reset file
     closeBulkModal()
 
-    alert(`Successfully imported ${items.length} vocabulary items`)
+    if (failureCount > 0) {
+      alert(`Import completed with ${successCount} items imported successfully and ${failureCount} failed items.`)
+    } else {
+      alert(`Successfully imported ${successCount} vocabulary items`)
+    }
   } catch (error) {
     console.error('Error importing CSV:', error)
     alert(`Error importing CSV: ${error.message}`)
@@ -566,10 +695,29 @@ watch(() => itemForm.value.audio_url, (newUrl) => {
   }
 })
 
+// Watch for changes in the word field to suggest auto-search
+watch(() => itemForm.value.word, (newWord, oldWord) => {
+  // Only show a suggestion when creating a new item (not when editing)
+  // and only when the word changes substantially
+  if (newWord && !editingItem.value && (!oldWord || oldWord.length < 2) && newWord.length >= 2) {
+    // Reset any previous search results
+    searchImages.value = []
+    searchImagesError.value = null
+    
+    // Set a small notification that images can be searched
+    searchImagesError.value = `You can search for images related to "${newWord}"`
+  }
+})
+
 // Initialize
 onMounted(() => {
   loadVocabularySet()
   loadVocabularyItems()
+  
+  // Verify Pexels client is initialized
+  if (!pexelsClient) {
+    console.error('Pexels client could not be initialized. Image search functionality may not work.')
+  }
 })
 
 // Cleanup
@@ -911,37 +1059,93 @@ onUnmounted(() => {
                     </button>
                   </div>
 
-                  <!-- Auto-generation buttons -->
+                  <!-- Audio controls -->
                   <div class="flex space-x-2">
                     <button
                       type="button"
                       @click="generateOxfordAudio(itemForm.word)"
                       :disabled="!itemForm.word?.trim()"
                       class="flex-1 px-3 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                      title="Generate Oxford Dictionary audio (fallback to TTS if not available)"
+                      title="Generate Oxford Dictionary audio"
                     >
                       <i class="fas fa-book mr-1"></i>Oxford Audio
                     </button>
-                    <button
-                      type="button"
-                      @click="generateTTSAudio(itemForm.word)"
-                      :disabled="!itemForm.word?.trim()"
-                      class="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                      title="Generate Text-to-Speech audio"
+                    
+                    <label 
+                      class="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center cursor-pointer"
+                      :class="{ 'opacity-70 pointer-events-none': isUploadingAudio }"
                     >
-                      <i class="fas fa-microphone mr-1"></i>TTS Audio
-                    </button>
+                      <input 
+                        type="file"
+                        ref="audioFileInput"
+                        @change="handleAudioFileChange"
+                        accept="audio/*"
+                        class="hidden"
+                      />
+                      <i :class="isUploadingAudio ? 'fas fa-spinner fa-spin mr-1' : 'fas fa-upload mr-1'"></i>
+                      {{ isUploadingAudio ? `Uploading ${uploadAudioProgress}%` : 'Upload Audio' }}
+                    </label>
                   </div>
+                  
+                  <!-- Upload progress bar (visible only during upload) -->
+                  <div v-if="isUploadingAudio" class="mt-2">
+                    <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-green-500 rounded-full transition-all duration-200" 
+                        :style="`width: ${uploadAudioProgress}%`"
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Audio file format note -->
+                  <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Supported audio formats: MP3, WAV, OGG, M4A, and AAC. Max file size: 10MB.
+                  </p>
                 </div>
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                <input
-                  v-model="itemForm.image_url"
-                  type="url"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter image URL">
+                <div class="flex space-x-2">
+                  <input
+                    v-model="itemForm.image_url"
+                    type="url"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter image URL">
+                  <button
+                    type="button"
+                    @click="searchImagesForWord(itemForm.word)"
+                    class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :disabled="isSearchingImages || !itemForm.word"
+                  >
+                    <i class="fas" :class="isSearchingImages ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+                    {{ isSearchingImages ? 'Searching...' : 'Find Images' }}
+                  </button>
+                </div>
+                
+                <!-- Image search results -->
+                <div v-if="searchImages.length > 0" class="mt-4">
+                  <h5 class="text-sm font-medium text-gray-700 mb-2">Select an image from Pexels:</h5>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div 
+                      v-for="image in searchImages" 
+                      :key="image.id"
+                      @click="selectImage(image)"
+                      class="cursor-pointer border hover:border-blue-500 rounded-md overflow-hidden"
+                      :class="{ 'ring-2 ring-blue-500': itemForm.image_url === image.url }"
+                    >
+                      <img :src="image.url" :alt="image.alt" class="w-full h-24 object-cover" />
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-2">
+                    Photos provided by <a href="https://www.pexels.com" target="_blank" class="text-blue-500 hover:underline">Pexels</a>
+                  </p>
+                </div>
+                
+                <div v-if="searchImagesError" class="mt-2 text-sm text-red-500">
+                  {{ searchImagesError }}
+                </div>
               </div>
             </div>
 

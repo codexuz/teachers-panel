@@ -4,9 +4,9 @@
     <div class="mb-6">
       <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold text-gray-800">Homework</h2>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        <router-link to="/group-homework" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 inline-flex items-center">
           <i class="fas fa-plus mr-2"></i>Assign Homework
-        </button>
+        </router-link>
       </div>
     </div>
 
