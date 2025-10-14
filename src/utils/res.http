@@ -1,7 +1,0 @@
-POST https://app.impulselc.uz/auth/admin/login
-Content-Type: application/json  
-
-{
-  "username": "admin_xusnora",
-  "password": "admin_xusnora"
-}   
