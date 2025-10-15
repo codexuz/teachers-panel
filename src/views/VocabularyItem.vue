@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { vocabularyAPI, vocabularyItemsAPI, uploadAPI } from '@/utils/api'
-import { createClient } from 'pexels'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,8 +17,8 @@ import { ArrowLeft, BookOpen, Volume2, Image as ImageIcon, Quote, List, Plus, Up
 const route = useRoute()
 const router = useRouter()
 
-// Initialize Pexels API client
-const pexelsClient = createClient('x9JPjTC9LmpxAkisngyQTO371TsvHiwnGeg9wX75RuXJFzJx5KfCn1bI')
+// Pexels API Key
+const PEXELS_API_KEY = 'x9JPjTC9LmpxAkisngyQTO371TsvHiwnGeg9wX75RuXJFzJx5KfCn1bI'
 
 // Reactive state
 const vocabularyItems = ref([])
@@ -216,15 +215,21 @@ const searchImagesForWord = async (word) => {
     isSearchingImages.value = true
     searchImages.value = []
     
-    // Search Pexels for images related to the word
-    const response = await pexelsClient.photos.search({ 
-      query: word, 
-      per_page: 8, // Get several options
-      size: 'medium'
+    // Search Pexels for images related to the word using fetch API
+    const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(word)}&per_page=10`, {
+      headers: {
+        'Authorization': PEXELS_API_KEY
+      }
     })
     
-    if (response && response.photos && response.photos.length > 0) {
-      searchImages.value = response.photos.map(photo => ({
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    
+    if (data && data.photos && data.photos.length > 0) {
+      searchImages.value = data.photos.map(photo => ({
         id: photo.id,
         url: photo.src.medium,
         alt: photo.alt || word,
@@ -725,9 +730,9 @@ onMounted(() => {
   loadVocabularySet()
   loadVocabularyItems()
   
-  // Verify Pexels client is initialized
-  if (!pexelsClient) {
-    console.error('Pexels client could not be initialized. Image search functionality may not work.')
+  // Check if Pexels API key is available
+  if (!PEXELS_API_KEY) {
+    console.error('Pexels API key is missing. Image search functionality may not work.')
   }
 })
 
