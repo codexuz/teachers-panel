@@ -25,6 +25,7 @@ import {
   Book,
   PlayCircle,
   Dumbbell,
+  Mic,
   Library,
   Link,
   LogOut,
@@ -95,6 +96,12 @@ const navigation = {
       url: "/exercises",
       icon: Dumbbell,
       isActive: (path) => path === '/exercises'
+    },
+    {
+      title: "Speaking",
+      url: "/speaking",
+      icon: Mic,
+      isActive: (path) => path === '/speaking'
     }
   ],
   resources: [

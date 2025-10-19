@@ -154,6 +154,18 @@ const handleLogout = async () => {
           <i class="fas fa-dumbbell mr-3"></i>
           Exercises
         </router-link>
+        <router-link
+          to="/speaking"
+          class="flex items-center px-6 py-3"
+          :class="
+            $route.path === '/speaking'
+              ? 'text-white bg-blue-600'
+              : 'text-gray-700 hover:bg-gray-50'
+          "
+        >
+          <i class="fas fa-microphone mr-3"></i>
+          Speaking
+        </router-link>
       </div>
       <div class="px-6 py-2 mt-6">
         <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
