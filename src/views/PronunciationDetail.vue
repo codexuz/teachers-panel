@@ -181,7 +181,7 @@ const submitForm = async () => {
     // Handle file upload if needed
     let audioUrl = pronunciationForm.audio_url
     if (pronunciationForm.audio_file) {
-      audioUrl = await uploadFile(pronunciationForm.audio_file, 'audio')
+      audioUrl = await uploadFile(pronunciationForm.audio_file)
     }
     
     const itemData = {
@@ -251,15 +251,13 @@ const removeFile = (field) => {
   fileInputKey.value++
 }
 
-const uploadFile = async (file, type = 'image') => {
+const uploadFile = async (file) => {
   isUploading.value = true
   uploadProgress.value = 0
   
   try {
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('type', type)
-    
+    formData.append('file', file)    
     const response = await uploadAPI.uploadFile(formData, (progressEvent) => {
       uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
     })
@@ -456,4 +454,5 @@ onMounted(() => {
       </DialogContent>
     </Dialog>
   </div>
+
 </template>
