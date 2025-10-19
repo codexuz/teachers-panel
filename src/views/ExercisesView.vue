@@ -499,6 +499,12 @@ const openQuestionModal = (questionIndex = -1) => {
 
     // Deep copy the question
     const questionCopy = { ...question }
+    
+    // Ensure question_type is set properly
+    console.log('Loading question with type:', questionCopy.question_type);
+    if (!questionCopy.question_type) {
+      questionCopy.question_type = 'multiple_choice';
+    }
 
     // Parse gap_filling correct_answer strings to arrays if needed
     if (questionCopy.gap_filling && Array.isArray(questionCopy.gap_filling)) {
@@ -565,14 +571,17 @@ const saveQuestion = () => {
     typing_exercise: []
   }
 
-  // Add type-specific data
-  if (showQuestionOptions.value) {
+  // Add type-specific data based on question_type directly
+  const questionType = currentQuestion.question_type;
+  console.log('Saving question of type:', questionType);
+  
+  if (questionType === 'multiple_choice' || questionType === 'true_false') {
     questionData.choices = currentQuestion.choices.filter(opt => opt.option_text.trim())
-  } else if (showGapFilling.value) {
+  } else if (questionType === 'fill_in_the_blank') {
     questionData.gap_filling = currentQuestion.gap_filling
-  } else if (showMatching.value) {
+  } else if (questionType === 'matching') {
     questionData.matching_pairs = currentQuestion.matching_pairs.filter(pair => pair.left_item.trim() && pair.right_item.trim())
-  } else if (showTyping.value) {
+  } else if (questionType === 'short_answer') {
     // Ensure typing_exercise is always an array with valid objects
     questionData.typing_exercise = (currentQuestion.typing_exercise || []).map(te => ({
       correct_answer: te.correct_answer ?? '',
@@ -874,6 +883,24 @@ watch(() => form.unitId, (newValue) => {
     form.lessonId = ''
   }
 })
+
+// Watch for question type changes to ensure proper rendering of different question components
+watch(() => currentQuestion.question_type, (newType) => {
+  console.log('Question type changed to:', newType)
+  // Reset/initialize form fields for the selected question type if needed
+  if (newType === 'multiple_choice' && (!currentQuestion.choices || currentQuestion.choices.length < 2)) {
+    currentQuestion.choices = [
+      { option_text: '', is_correct: false },
+      { option_text: '', is_correct: false }
+    ]
+  } else if (newType === 'fill_in_the_blank' && (!currentQuestion.gap_filling || currentQuestion.gap_filling.length === 0)) {
+    currentQuestion.gap_filling = [{ gap_number: 1, correct_answer: [] }]
+  } else if (newType === 'matching' && (!currentQuestion.matching_pairs || currentQuestion.matching_pairs.length === 0)) {
+    currentQuestion.matching_pairs = [{ left_item: '', right_item: '' }]
+  } else if (newType === 'short_answer' && (!currentQuestion.typing_exercise || currentQuestion.typing_exercise.length === 0)) {
+    currentQuestion.typing_exercise = [{ correct_answer: '', is_case_sensitive: false }]
+  }
+})
 </script>
 
 <template>
@@ -1062,24 +1089,16 @@ watch(() => form.unitId, (newValue) => {
             <!-- Questions Management -->
             <Card>
               <CardHeader>
-                <CardTitle class="flex items-center justify-between">
+                <CardTitle>
                   Questions ({{ form.questions.length }})
-                  <Button type="button" variant="outline" size="sm" @click="openQuestionModal">
-                    <Plus class="h-4 w-4 mr-2" />
-                    Add Question
-                  </Button>
                 </CardTitle>
                 <CardDescription>
-                  Add and manage questions for this exercise
+                  Manage questions for this exercise
                 </CardDescription>
               </CardHeader>
               <CardContent v-if="form.questions.length === 0" class="text-center py-8">
                 <FileText class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p class="text-muted-foreground">No questions added yet</p>
-                <Button type="button" variant="outline" class="mt-2" @click="openQuestionModal">
-                  <Plus class="h-4 w-4 mr-2" />
-                  Add First Question
-                </Button>
               </CardContent>
               <CardContent v-else class="space-y-3">
                 <div 
@@ -1096,9 +1115,6 @@ watch(() => form.unitId, (newValue) => {
                     </div>
                   </div>
                   <div class="flex gap-2">
-                    <Button type="button" variant="ghost" size="sm" @click.stop="editQuestion(index)">
-                      <Edit class="h-4 w-4" />
-                    </Button>
                     <Button type="button" variant="ghost" size="sm" @click.stop="deleteQuestion(index)">
                       <Trash2 class="h-4 w-4" />
                     </Button>
@@ -1252,7 +1268,6 @@ watch(() => form.unitId, (newValue) => {
                 <TableHead>Type</TableHead>
                 <TableHead>Lesson</TableHead>
                 <TableHead>Details</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead class="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1293,26 +1308,28 @@ watch(() => form.unitId, (newValue) => {
                     </Badge>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div class="flex items-center gap-2">
-                    <Switch 
-                      :checked="exercise.isActive" 
-                      @update:checked="toggleExerciseStatus(exercise)"
-                      size="sm"
-                    />
-                    <span class="text-xs text-muted-foreground">
-                      {{ exercise.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </div>
-                </TableCell>
                 <TableCell class="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal class="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                  <div class="flex items-center justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      @click="$router.push(`/exercises/${exercise.id}`)" 
+                      class="flex items-center gap-1"
+                    >
+                      <Eye class="h-3 w-3" />
+                      View
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal class="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                      <DropdownMenuItem @click="$router.push(`/exercises/${exercise.id}`)">
+                        <Eye class="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem @click="openEditModal(exercise)">
                         <Edit class="h-4 w-4 mr-2" />
                         Edit
@@ -1323,6 +1340,7 @@ watch(() => form.unitId, (newValue) => {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -1349,6 +1367,10 @@ watch(() => form.unitId, (newValue) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem @click="$router.push(`/exercises/${exercise.id}`)">
+                      <Eye class="h-4 w-4 mr-2" />
+                      View Details
+                    </DropdownMenuItem>
                     <DropdownMenuItem @click="openEditModal(exercise)">
                       <Edit class="h-4 w-4 mr-2" />
                       Edit
@@ -1366,7 +1388,7 @@ watch(() => form.unitId, (newValue) => {
                 <div class="text-sm text-muted-foreground">
                   <strong>Lesson:</strong> {{ getLessonNameById(exercise.lessonId) }}
                 </div>
-                <div class="flex flex-wrap gap-1">
+                <div class="flex flex-wrap gap-1 mb-2">
                   <Badge variant="outline" class="text-xs">{{ getTotalPoints(exercise) }}pts</Badge>
                   <Badge variant="secondary" class="text-xs">{{ exercise.questions ? exercise.questions.length : 0 }} Questions</Badge>
                   <Badge v-if="exercise.audio_url" variant="secondary" class="text-xs">
@@ -1378,6 +1400,11 @@ watch(() => form.unitId, (newValue) => {
                     Image
                   </Badge>
                 </div>
+                
+                <Button variant="outline" size="sm" class="w-full" @click="$router.push(`/exercises/${exercise.id}`)">
+                  <Eye class="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
               </div>
 
               <!-- Status Toggle -->
@@ -1444,7 +1471,7 @@ watch(() => form.unitId, (newValue) => {
           <!-- Question Modal Header -->
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium">
-              {{ isEditingQuestion ? 'Edit Question' : 'Add New Question' }}
+              {{ isEditingQuestion ? 'Edit' : 'Add' }} {{ getQuestionTypeLabel(currentQuestion.question_type) }} Question
             </h3>
             <Button variant="ghost" size="sm" @click="closeQuestionModal">
               <X class="h-4 w-4" />
@@ -1453,33 +1480,36 @@ watch(() => form.unitId, (newValue) => {
 
           <!-- Question Modal Body -->
           <form @submit.prevent="saveQuestion" class="space-y-4">
-            <!-- Question Type and Points -->
-            <div class="grid gap-4 md:grid-cols-3">
-              <div class="space-y-2">
-                <Label>Question Type</Label>
-                <Select v-model="currentQuestion.question_type">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="type in questionTypes" :key="type.value" :value="type.value">
-                      <div class="flex items-center gap-2">
-                        <component :is="type.icon" class="h-4 w-4" />
-                        {{ type.label }}
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <!-- Question Type Selection - Important section highlighted -->
+            <div class="p-3 border border-blue-200 bg-blue-50 rounded-md mb-4">
+              <h4 class="text-sm font-medium text-blue-700 mb-2">Select Question Type</h4>
+              <div class="grid gap-4 md:grid-cols-3">
+                <div class="space-y-2 col-span-2">
+                  <Label for="question-type">Question Type</Label>
+                  <Select v-model="currentQuestion.question_type" name="question-type">
+                    <SelectTrigger id="question-type" class="bg-white">
+                      <SelectValue :placeholder="getQuestionTypeLabel(currentQuestion.question_type)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="type in questionTypes" :key="type.value" :value="type.value">
+                        <div class="flex items-center gap-2">
+                          <component :is="type.icon" class="h-4 w-4" />
+                          {{ type.label }}
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div class="space-y-2">
-                <Label>Points</Label>
-                <Input type="number" v-model="currentQuestion.points" min="1" />
-              </div>
+                <div class="space-y-2">
+                  <Label>Points</Label>
+                  <Input type="number" v-model="currentQuestion.points" min="1" />
+                </div>
 
-              <div class="space-y-2">
-                <Label>Order</Label>
-                <Input type="number" v-model="currentQuestion.order_number" min="1" />
+                <div class="space-y-2">
+                  <Label>Order</Label>
+                  <Input type="number" v-model="currentQuestion.order_number" min="1" />
+                </div>
               </div>
             </div>
 

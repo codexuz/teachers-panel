@@ -57,6 +57,30 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/exercises/:id",
+          name: "exercise-detail",
+          component: () => import("../views/ExerciseDetail.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/speaking",
+          name: "speaking",
+          component: () => import("../views/SpeakingView.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/speaking/:id",
+          name: "speaking-detail",
+          component: () => import("../views/SpeakingDetail.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/pronunciation/:speakingId",
+          name: "pronunciation-detail",
+          component: () => import("../views/PronunciationDetail.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/homework",
           name: "homework",
           component: () => import("../views/HomeWork.vue"),

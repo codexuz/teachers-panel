@@ -391,6 +391,166 @@ export const exercisesAPI = {
     }),
 };
 
+// Speaking API functions
+export const speakingAPI = {
+  // Get all speaking exercises
+  getAll: () => apiRequest("/speaking"),
+
+  // Get speaking exercises by lesson ID
+  getByLesson: (lessonId) => apiRequest(`/speaking/lesson/${lessonId}`),
+
+  // Get a single speaking exercise by ID
+  getById: (id) => apiRequest(`/speaking/${id}`),
+
+  // Create a new speaking exercise
+  create: (speakingData) =>
+    apiRequest("/speaking", {
+      method: "POST",
+      body: JSON.stringify(speakingData),
+    }),
+
+  // Update an existing speaking exercise
+  update: (id, speakingData) =>
+    apiRequest(`/speaking/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(speakingData),
+    }),
+
+  // Delete a speaking exercise
+  delete: (id) =>
+    apiRequest(`/speaking/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Pronunciation Exercise API functions
+export const pronunciationAPI = {
+  // Get all pronunciation exercises
+  getAll: () => apiRequest("/pronunciation-exercise"),
+
+  // Get pronunciation exercises by speaking ID
+  getBySpeakingId: (speakingId) => apiRequest(`/pronunciation-exercise/speaking/${speakingId}`),
+
+  // Get a single pronunciation exercise by ID
+  getById: (id) => apiRequest(`/pronunciation-exercise/${id}`),
+
+  // Create a new pronunciation exercise
+  create: (pronunciationData) =>
+    apiRequest("/pronunciation-exercise", {
+      method: "POST",
+      body: JSON.stringify(pronunciationData),
+    }),
+
+  // Update an existing pronunciation exercise
+  update: (id, pronunciationData) =>
+    apiRequest(`/pronunciation-exercise/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(pronunciationData),
+    }),
+
+  // Delete a pronunciation exercise
+  delete: (id) =>
+    apiRequest(`/pronunciation-exercise/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// IELTS Part 1 Question API functions
+export const ieltsPart1API = {
+  // Get all IELTS Part 1 questions
+  getAll: () => apiRequest("/ieltspart1-question"),
+
+  // Get IELTS Part 1 questions by speaking ID
+  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart1-question/speaking/${speakingId}`),
+
+  // Get a single IELTS Part 1 question by ID
+  getById: (id) => apiRequest(`/ieltspart1-question/${id}`),
+
+  // Create a new IELTS Part 1 question
+  create: (questionData) =>
+    apiRequest("/ieltspart1-question", {
+      method: "POST",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Update an existing IELTS Part 1 question
+  update: (id, questionData) =>
+    apiRequest(`/ieltspart1-question/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Delete an IELTS Part 1 question
+  delete: (id) =>
+    apiRequest(`/ieltspart1-question/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// IELTS Part 2 Question API functions
+export const ieltsPart2API = {
+  // Get all IELTS Part 2 questions
+  getAll: () => apiRequest("/ieltspart2-question"),
+
+  // Get IELTS Part 2 questions by speaking ID
+  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart2-question/speaking/${speakingId}`),
+
+  // Get a single IELTS Part 2 question by ID
+  getById: (id) => apiRequest(`/ieltspart2-question/${id}`),
+
+  // Create a new IELTS Part 2 question
+  create: (questionData) =>
+    apiRequest("/ieltspart2-question", {
+      method: "POST",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Update an existing IELTS Part 2 question
+  update: (id, questionData) =>
+    apiRequest(`/ieltspart2-question/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Delete an IELTS Part 2 question
+  delete: (id) =>
+    apiRequest(`/ieltspart2-question/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// IELTS Part 3 Question API functions
+export const ieltsPart3API = {
+  // Get all IELTS Part 3 questions
+  getAll: () => apiRequest("/ieltspart3-question"),
+
+  // Get IELTS Part 3 questions by speaking ID
+  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart3-question/speaking/${speakingId}`),
+
+  // Get a single IELTS Part 3 question by ID
+  getById: (id) => apiRequest(`/ieltspart3-question/${id}`),
+
+  // Create a new IELTS Part 3 question
+  create: (questionData) =>
+    apiRequest("/ieltspart3-question", {
+      method: "POST",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Update an existing IELTS Part 3 question
+  update: (id, questionData) =>
+    apiRequest(`/ieltspart3-question/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(questionData),
+    }),
+
+  // Delete an IELTS Part 3 question
+  delete: (id) =>
+    apiRequest(`/ieltspart3-question/${id}`, {
+      method: "DELETE",
+    }),
+};
+
 // Lesson Content API functions
 export const lessonContentAPI = {
   // Get all lesson contents
