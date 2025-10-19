@@ -73,6 +73,17 @@ import {
 const route = useRoute()
 const router = useRouter()
 
+
+
+// Computed properties
+const speakingId = computed(() => {
+  console.log('Route params:', route.params)
+  return route.params.speakingId
+})
+const pronunciationTitle = computed(() => 'Pronunciation Exercise')
+const pronunciationDescription = computed(() => 'Practice correct pronunciation')
+
+
 const isLoading = ref(false)
 const error = ref('')
 const showModal = ref(false)
@@ -97,36 +108,55 @@ const pronunciationForm = reactive({
   audio_file: null
 })
 
-// Computed properties
-const speakingId = computed(() => route.params.id)
-const pronunciationTitle = computed(() => pronunciationExercise.value?.title || 'Pronunciation Exercise')
-const pronunciationDescription = computed(() => pronunciationExercise.value?.description || '')
 
 // Functions
 const fetchData = async () => {
-  if (!speakingId.value) return
+  const currentSpeakingId = route.params.speakingId;
+  console.log('Fetching data with speaking ID:', currentSpeakingId);
+  
+  if (!currentSpeakingId) {
+    console.error('No speaking ID available for data fetch');
+    error.value = 'No speaking ID available. Please go back and try again.';
+    return;
+  }
 
   isLoading.value = true
   error.value = ''
 
   try {
-    // Fetch the speaking exercise
-    const response = await pronunciationAPI.getById(speakingId.value)
-    pronunciationExercise.value = response
+    // Get speaking ID directly from route params
+    const currentSpeakingId = route.params.speakingId;
     
-    // Fetch pronunciation items
-    await fetchPronunciationItems()
+    // No need to fetch the speaking exercise directly since it's causing a 404 error
+    // Just set a default exercise object with the ID
+    pronunciationExercise.value = {
+      id: currentSpeakingId,
+      title: 'Pronunciation Exercise',
+      description: 'Practice correct pronunciation'
+    }
+    
+    // Fetch pronunciation items only
+    await fetchPronunciationItems(currentSpeakingId)
   } catch (err) {
     console.error('Error fetching pronunciation data:', err)
-    error.value = 'Failed to load pronunciation exercise'
+    error.value = 'Failed to load pronunciation items'
   } finally {
     isLoading.value = false
   }
 }
 
-const fetchPronunciationItems = async () => {
+const fetchPronunciationItems = async (id = null) => {
   try {
-    const response = await pronunciationAPI.getBySpeakingId(speakingId.value)
+    // Use provided ID or get from route params
+    const currentSpeakingId = id || route.params.speakingId;
+    console.log('Fetching pronunciation items for speaking ID:', currentSpeakingId);
+    
+    if (!currentSpeakingId) {
+      console.error('No speaking ID available for fetching items');
+      return;
+    }
+    
+    const response = await pronunciationAPI.getBySpeakingId(currentSpeakingId)
     pronunciationItems.value = response || []
   } catch (err) {
     console.error('Error fetching pronunciation items:', err)
@@ -138,6 +168,18 @@ const fetchPronunciationItems = async () => {
 const openModal = () => {
   isEditMode.value = false
   resetForm()
+  
+  // Explicitly ensure speaking_id is set from route
+  const currentSpeakingId = route.params.speakingId;
+  console.log('Opening modal with speaking_id:', currentSpeakingId);
+  
+  if (!currentSpeakingId) {
+    console.error('Error: No speaking ID found in route params');
+    error.value = 'No speaking ID available. Please go back and try again.';
+    return;
+  }
+  
+  pronunciationForm.speaking_id = currentSpeakingId;
   showModal.value = true
 }
 
@@ -153,10 +195,18 @@ const closeModal = () => {
 }
 
 const resetForm = () => {
+  // Get the current speaking ID from route params
+  const currentSpeakingId = route.params.speakingId;
+  console.log('Resetting form with speaking_id:', currentSpeakingId);
+  
+  if (!currentSpeakingId) {
+    console.error('Warning: No speaking ID in route params');
+  }
+  
   // Reset pronunciation form
   Object.assign(pronunciationForm, {
     id: null,
-    speaking_id: "",
+    speaking_id: currentSpeakingId,
     word_to_pronunce: "",
     audio_url: "",
     audio_file: null
@@ -175,14 +225,32 @@ const submitForm = async () => {
     // Validate
     if (!pronunciationForm.word_to_pronunce.trim()) {
       error.value = 'Please enter a word to pronounce'
+      isLoading.value = false
       return
     }
+    
+    // Get speaking_id directly from route params
+    const currentSpeakingId = route.params.speakingId;
+    console.log('Submitting form with speaking_id from route:', currentSpeakingId);
+    
+    // Ensure speaking_id is set and valid
+    if (!currentSpeakingId) {
+      error.value = 'Speaking ID is required but not found in route params'
+      isLoading.value = false
+      return
+    }
+    
+    // Update the form with current speaking_id
+    pronunciationForm.speaking_id = currentSpeakingId;
     
     // Handle file upload if needed
     let audioUrl = pronunciationForm.audio_url
     if (pronunciationForm.audio_file) {
-      audioUrl = await uploadFile(pronunciationForm.audio_file)
+      audioUrl = await uploadFile(pronunciationForm.audio_file, 'audio')
     }
+    
+    // Make sure speaking_id is set in the form
+    pronunciationForm.speaking_id = speakingId.value;
     
     const itemData = {
       speaking_id: pronunciationForm.speaking_id,
@@ -190,23 +258,55 @@ const submitForm = async () => {
       audio_url: audioUrl
     }
     
+    console.log('Submitting with speaking_id:', itemData.speaking_id);
+    
+    // Validate speaking_id
+    if (!itemData.speaking_id) {
+      error.value = 'Speaking ID is missing'
+      isLoading.value = false
+      return
+    }
+    
     if (isEditMode.value) {
-      await pronunciationAPI.update(pronunciationForm.id, itemData)
-      
-      // Update item in the list
-      const index = pronunciationItems.value.findIndex(item => item.id === pronunciationForm.id)
-      if (index !== -1) {
-        pronunciationItems.value[index] = { ...pronunciationItems.value[index], ...itemData }
+      try {
+        await pronunciationAPI.update(pronunciationForm.id, itemData)
+        
+        // Update item in the list
+        const index = pronunciationItems.value.findIndex(item => item.id === pronunciationForm.id)
+        if (index !== -1) {
+          pronunciationItems.value[index] = { ...pronunciationItems.value[index], ...itemData }
+        }
+      } catch (err) {
+        console.error('Error updating pronunciation item:', err)
+        error.value = `Failed to update pronunciation item: ${err.message || 'Unknown error'}`
+        isLoading.value = false
+        return
       }
     } else {
-      const response = await pronunciationAPI.create(itemData)
-      pronunciationItems.value.push(response)
+      try {
+        const response = await pronunciationAPI.create(itemData)
+        pronunciationItems.value.push(response)
+      } catch (err) {
+        console.error('Error creating pronunciation item:', err)
+        error.value = `Failed to create pronunciation item: ${err.message || 'Unknown error'}`
+        isLoading.value = false
+        return
+      }
     }
     
     closeModal()
   } catch (err) {
     console.error('Error submitting form:', err)
-    error.value = 'Failed to save pronunciation item'
+    if (err.response && err.response.data && err.response.data.message) {
+      // Handle structured API error responses
+      if (Array.isArray(err.response.data.message)) {
+        error.value = err.response.data.message.join(', ')
+      } else {
+        error.value = err.response.data.message
+      }
+    } else {
+      error.value = `Failed to save pronunciation item: ${err.message || 'Unknown error'}`
+    }
   } finally {
     isLoading.value = false
   }
@@ -256,9 +356,7 @@ const uploadFile = async (file) => {
   uploadProgress.value = 0
   
   try {
-    const formData = new FormData()
-    formData.append('file', file)    
-    const response = await uploadAPI.uploadFile(formData, (progressEvent) => {
+    const response = await uploadAPI.uploadFile(file, (progressEvent) => {
       uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
     })
     
@@ -272,8 +370,29 @@ const uploadFile = async (file) => {
   }
 }
 
+// Watch for route param changes
+watch(speakingId, (newId) => {
+  console.log('Route param changed to:', newId)
+  if (newId) {
+    pronunciationForm.speaking_id = newId
+    fetchData()
+  }
+})
+
 // Lifecycle hooks
 onMounted(() => {
+  // Get the current speaking ID from route params
+  const currentSpeakingId = route.params.speakingId;
+  console.log('Component mounted. Speaking ID from route:', currentSpeakingId);
+  
+  if (currentSpeakingId) {
+    // Directly set speaking_id from route params
+    pronunciationForm.speaking_id = currentSpeakingId;
+  } else {
+    console.error('No speaking ID found in route params on mount');
+    error.value = 'No speaking ID available. Please go back and try again.';
+  }
+  
   fetchData()
 })
 </script>
@@ -454,5 +573,4 @@ onMounted(() => {
       </DialogContent>
     </Dialog>
   </div>
-
 </template>
