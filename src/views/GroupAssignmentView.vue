@@ -4,8 +4,12 @@
     <div class="mb-6">
       <div class="flex flex-col md:flex-row md:justify-between md:items-center">
         <div class="space-y-1">
-          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Group Assignment</h1>
-          <p class="text-muted-foreground">Assign and manage learning units for your groups</p>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+            Group Assignment
+          </h1>
+          <p class="text-muted-foreground">
+            Assign and manage learning units for your groups
+          </p>
         </div>
       </div>
     </div>
@@ -26,66 +30,73 @@
 
     <!-- Success Message -->
     <div v-if="successMessage" class="mb-6">
-      <Alert class="flex items-start bg-green-50 border-green-200 text-green-800">
+      <Alert
+        class="flex items-start bg-green-50 border-green-200 text-green-800"
+      >
         <Check class="h-4 w-4 mr-2 mt-0.5 text-green-600" />
         <div class="flex-1">
           <AlertTitle>Success</AlertTitle>
           <AlertDescription>{{ successMessage }}</AlertDescription>
         </div>
-        <Button variant="ghost" size="icon" class="h-8 w-8 text-green-700 hover:text-green-900" @click="successMessage = ''">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8 text-green-700 hover:text-green-900"
+          @click="successMessage = ''"
+        >
           <X class="h-4 w-4" />
         </Button>
       </Alert>
     </div>
-    
+
     <!-- Progress Indicator -->
     <!-- Progress Indicator -->
     <div class="mb-8">
       <div class="flex flex-wrap gap-2 sm:gap-0">
         <div class="flex items-center flex-1">
-          <div 
+          <div
             class="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm"
             :class="[
               selectedGroup ? 'bg-primary' : 'bg-primary/90',
-              selectedUnits.length > 0 ? 'bg-primary/80' : ''
+              selectedUnits.length > 0 ? 'bg-primary/80' : '',
             ]"
           >
             1
           </div>
-          <div 
-            class="h-1 flex-1" 
-            :class="[
-              selectedGroup ? 'bg-primary' : 'bg-muted',
-            ]"
+          <div
+            class="h-1 flex-1"
+            :class="[selectedGroup ? 'bg-primary' : 'bg-muted']"
           ></div>
         </div>
         <div class="flex items-center flex-1">
-          <div 
+          <div
             class="w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm"
             :class="[
-              selectedGroup && selectedUnits.length > 0 
-                ? 'bg-primary text-white' 
-                : 'bg-muted text-muted-foreground'
+              selectedGroup && selectedUnits.length > 0
+                ? 'bg-primary text-white'
+                : 'bg-muted text-muted-foreground',
             ]"
           >
             2
           </div>
-          <div 
+          <div
             class="h-1 flex-1"
             :class="[
-              selectedGroup && selectedUnits.length > 0 
-                ? 'bg-primary' 
-                : 'bg-muted'
+              selectedGroup && selectedUnits.length > 0
+                ? 'bg-primary'
+                : 'bg-muted',
             ]"
           ></div>
         </div>
         <div class="flex items-center flex-1">
-          <div 
+          <div
             class="w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm"
             :class="[
-              selectedGroup && selectedUnits.length > 0 && (dueDate || assignmentType) 
-                ? 'bg-primary text-white' 
-                : 'bg-muted text-muted-foreground'
+              selectedGroup &&
+              selectedUnits.length > 0 &&
+              (dueDate || assignmentType)
+                ? 'bg-primary text-white'
+                : 'bg-muted text-muted-foreground',
             ]"
           >
             3
@@ -93,127 +104,82 @@
         </div>
       </div>
       <div class="flex flex-wrap gap-2 sm:gap-0 mt-2 text-sm">
-        <div 
+        <div
           class="flex-1 text-center sm:text-left font-medium"
           :class="selectedGroup ? 'text-primary' : 'text-muted-foreground'"
         >
           Select Group
         </div>
-        <div 
+        <div
           class="flex-1 text-center font-medium"
-          :class="selectedGroup && selectedUnits.length > 0 ? 'text-primary' : 'text-muted-foreground'"
+          :class="
+            selectedGroup && selectedUnits.length > 0
+              ? 'text-primary'
+              : 'text-muted-foreground'
+          "
         >
           Select Units
         </div>
-        <div 
+        <div
           class="flex-1 text-center sm:text-right font-medium"
-          :class="selectedGroup && selectedUnits.length > 0 && (dueDate || assignmentType) ? 'text-primary' : 'text-muted-foreground'"
+          :class="
+            selectedGroup &&
+            selectedUnits.length > 0 &&
+            (dueDate || assignmentType)
+              ? 'text-primary'
+              : 'text-muted-foreground'
+          "
         >
           Assignment Details
         </div>
       </div>
-    </div>    <!-- Group Selection -->
+    </div>
+    <!-- Group Selection -->
     <Card class="mb-8">
       <CardHeader>
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-          <CardTitle class="flex items-center">
-            <Users class="h-5 w-5 mr-2 text-primary" />
-            Step 1: Select a Group
-          </CardTitle>
-          
-          <!-- Search Groups -->
-          <div class="relative flex-grow sm:max-w-md mt-4 sm:mt-0">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search class="h-4 w-4 text-muted-foreground" />
-            </div>
-            <Input
-              v-model="searchQuery"
-              placeholder="Search by group name..."
-              class="pl-9"
-            />
-          </div>
-        </div>
+        <CardTitle class="flex items-center">
+          <Users class="h-5 w-5 mr-2 text-primary" />
+          Step 1: Select a Group
+        </CardTitle>
       </CardHeader>
-
       <CardContent>
-        <!-- Group Counter and Filter Options -->
-        <div class="flex flex-wrap items-center justify-between mb-4 text-sm">
-          <p class="text-muted-foreground"><span class="font-semibold">{{ filteredGroups.length }}</span> groups available</p>
-          
-          <div class="flex gap-2 mt-2 sm:mt-0">
-            <Button variant="outline" size="sm" class="h-8 px-3 flex items-center">
-              <Filter class="h-3.5 w-3.5 mr-1.5" />
-              Filter
-            </Button>
-            <Button variant="outline" size="sm" class="h-8 px-3 flex items-center">
-              <ArrowUpDown class="h-3.5 w-3.5 mr-1.5" />
-              Sort
-            </Button>
-          </div>
-        </div>
-
-        <!-- Groups Grid -->
-        <div v-if="isLoading" class="text-center py-12">
-          <Loader2 class="h-12 w-12 mx-auto text-primary animate-spin" />
-          <p class="text-muted-foreground mt-4">Loading your groups...</p>
-        </div>
-
-        <div v-else-if="filteredGroups.length === 0" class="text-center py-12 bg-muted/50 rounded-lg border">
-          <UserX class="h-16 w-16 mx-auto text-muted-foreground/70 mb-4" />
-          <p class="text-muted-foreground font-medium">No groups found</p>
-          <p class="text-muted-foreground/70 text-sm mt-1">Try adjusting your search criteria</p>
-        </div>
-
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card
-            v-for="group in filteredGroups"
-            :key="group.id"
-            @click="selectGroup(group)"
-            class="cursor-pointer hover:shadow-md transition-all duration-300"
-            :class="{ 
-              'border-primary ring-1 ring-primary/20 bg-primary/5': selectedGroup?.id === group.id,
-              'border-border hover:border-primary/30': selectedGroup?.id !== group.id
-            }"
-          >
-            <!-- Selection indicator -->
-            <Badge 
-              v-if="selectedGroup?.id === group.id" 
-              class="absolute -top-2 -right-2 h-8 w-8 rounded-full justify-center shadow-sm bg-primary"
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Group Selection -->
+          <div class="space-y-2">
+            <Label>Select Group</Label>
+            <Select
+              v-model="selectedGroupId"
+              @update:model-value="handleGroupSelection"
             >
-              <Check class="h-4 w-4" />
-            </Badge>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a group to assign units" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="null">Select a group</SelectItem>
+                <SelectItem
+                  v-for="group in filteredGroups"
+                  :key="group.id"
+                  :value="group.id"
+                >
+                  {{ group.name }} - {{ getCourseTitle(group.level_id) }} ({{
+                    group.student_count || 0
+                  }}
+                  students)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p v-if="isLoading" class="text-sm text-muted-foreground">
+              Loading groups...
+            </p>
+            <p
+              v-else-if="groups.length === 0"
+              class="text-sm text-muted-foreground"
+            >
+              No groups available
+            </p>
+          </div>
 
-            <CardContent class="p-5">
-              <div class="flex items-start justify-between mb-3">
-                <h3 class="font-medium text-lg">{{ group.name }}</h3>
-              </div>
-
-              <div class="space-y-3 text-sm">
-                <div class="flex items-center">
-                  <div class="bg-blue-100 p-1.5 rounded-md mr-3 flex items-center justify-center">
-                    <BookOpen class="h-4 w-4 text-blue-600" />
-                  </div>
-                  <span class="text-foreground">{{ getCourseTitle(group.level_id) }}</span>
-                </div>
-                <div class="flex items-center">
-                  <div class="bg-green-100 p-1.5 rounded-md mr-3 flex items-center justify-center">
-                    <Users2 class="h-4 w-4 text-green-600" />
-                  </div>
-                  <span class="text-foreground">{{ group.student_count || 0 }} students enrolled</span>
-                </div>
-                <div class="flex items-center">
-                  <div class="bg-purple-100 p-1.5 rounded-md mr-3 flex items-center justify-center">
-                    <Calendar class="h-4 w-4 text-purple-600" />
-                  </div>
-                  <span class="text-foreground">Created {{ formatDate(group.created_at) }}</span>
-                </div>
-              </div>
-              
-              <div v-if="selectedGroup?.id === group.id" class="mt-4 pt-3 border-t border-primary/20 text-primary font-medium text-center">
-                Group selected
-              </div>
-            </CardContent>
-          </Card>
+         
         </div>
       </CardContent>
     </Card>
@@ -228,7 +194,10 @@
       </CardHeader>
 
       <CardContent>
-        <div v-if="isLoadingUnits || isLoadingAssignedUnits" class="text-center py-8">
+        <div
+          v-if="isLoadingUnits || isLoadingAssignedUnits"
+          class="text-center py-8"
+        >
           <Loader2 class="h-10 w-10 mx-auto text-primary mb-4 animate-spin" />
           <p class="text-muted-foreground">Loading units...</p>
         </div>
@@ -238,7 +207,9 @@
           <div class="mb-6">
             <Label for="unitSearch">Search Units</Label>
             <div class="relative mt-1.5">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search
+                class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+              />
               <Input
                 id="unitSearch"
                 v-model="unitSearchQuery"
@@ -253,20 +224,39 @@
             <TabsList class="grid w-full grid-cols-2">
               <TabsTrigger value="assigned" class="flex items-center">
                 <CheckCircle2 class="h-4 w-4 mr-2" />
-                <span>Assigned Units <Badge v-if="assignedFilteredUnits.length">{{ assignedFilteredUnits.length }}</Badge></span>
+                <span
+                  >Assigned Units
+                  <Badge v-if="assignedFilteredUnits.length">{{
+                    assignedFilteredUnits.length
+                  }}</Badge></span
+                >
               </TabsTrigger>
               <TabsTrigger value="available" class="flex items-center">
                 <Plus class="h-4 w-4 mr-2" />
-                <span>Available Units <Badge v-if="availableUnits.length">{{ availableUnits.length }}</Badge></span>
+                <span
+                  >Available Units
+                  <Badge v-if="availableUnits.length">{{
+                    availableUnits.length
+                  }}</Badge></span
+                >
               </TabsTrigger>
             </TabsList>
 
             <!-- Already Assigned Units Tab -->
             <TabsContent value="assigned">
-              <div v-if="assignedFilteredUnits.length === 0" class="text-center py-10 bg-muted/50 rounded-lg border mt-4">
-                <ClipboardCheck class="h-12 w-12 mx-auto text-muted-foreground/70 mb-4" />
-                <p class="text-muted-foreground font-medium">No units assigned</p>
-                <p class="text-muted-foreground/70 text-sm mt-1">Switch to Available Units tab to assign some</p>
+              <div
+                v-if="assignedFilteredUnits.length === 0"
+                class="text-center py-10 bg-muted/50 rounded-lg border mt-4"
+              >
+                <ClipboardCheck
+                  class="h-12 w-12 mx-auto text-muted-foreground/70 mb-4"
+                />
+                <p class="text-muted-foreground font-medium">
+                  No units assigned
+                </p>
+                <p class="text-muted-foreground/70 text-sm mt-1">
+                  Switch to Available Units tab to assign some
+                </p>
               </div>
 
               <div v-else class="space-y-3 mt-4">
@@ -279,24 +269,49 @@
                     <div class="flex items-center justify-between">
                       <div class="flex-1">
                         <h3 class="font-medium">{{ unit.title }}</h3>
-                        <p class="text-sm text-muted-foreground mt-1">{{ unit.description || 'No description available' }}</p>
-                        <div class="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <p class="text-sm text-muted-foreground mt-1">
+                          {{ unit.description || "No description available" }}
+                        </p>
+                        <div
+                          class="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground"
+                        >
                           <div>
-                            <span class="font-medium">Start Date:</span> {{ unit.start_date ? new Date(unit.start_date).toLocaleDateString() : 'Not set' }}
+                            <span class="font-medium">Start Date:</span>
+                            {{
+                              unit.start_date
+                                ? new Date(unit.start_date).toLocaleDateString()
+                                : "Not set"
+                            }}
                           </div>
                           <div>
-                            <span class="font-medium">End Date:</span> {{ unit.end_date ? new Date(unit.end_date).toLocaleDateString() : 'No expiration' }}
+                            <span class="font-medium">End Date:</span>
+                            {{
+                              unit.end_date
+                                ? new Date(unit.end_date).toLocaleDateString()
+                                : "No expiration"
+                            }}
                           </div>
                           <div>
                             <span class="font-medium">Status:</span>
-                            <Badge variant="outline" :class="unit.status === 'unlocked' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-orange-100 text-orange-800 border-orange-200'">
-                              {{ unit.status === 'unlocked' ? 'Unlocked' : 'Locked' }}
+                            <Badge
+                              variant="outline"
+                              :class="
+                                unit.status === 'unlocked'
+                                  ? 'bg-green-100 text-green-800 border-green-200'
+                                  : 'bg-orange-100 text-orange-800 border-orange-200'
+                              "
+                            >
+                              {{
+                                unit.status === "unlocked"
+                                  ? "Unlocked"
+                                  : "Locked"
+                              }}
                             </Badge>
                           </div>
                         </div>
                       </div>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="icon"
                         @click="unassignUnit(unit)"
                         class="h-8 w-8"
@@ -316,20 +331,20 @@
                 <h3 class="text-sm font-medium text-muted-foreground">
                   Units Available to Assign
                 </h3>
-                
+
                 <div class="flex gap-2">
-                  <Button 
+                  <Button
                     v-if="availableUnits.length > 0"
-                    @click="selectAllAvailableUnits" 
+                    @click="selectAllAvailableUnits"
                     variant="outline"
                     size="sm"
                     class="h-8"
                   >
                     <CheckCheck class="h-3.5 w-3.5 mr-1.5" /> Select All
                   </Button>
-                  <Button 
+                  <Button
                     v-if="selectedUnits.length > 0"
-                    @click="deselectAllUnits" 
+                    @click="deselectAllUnits"
                     variant="ghost"
                     size="sm"
                     class="h-8"
@@ -338,10 +353,17 @@
                   </Button>
                 </div>
               </div>
-              
-              <div v-if="availableUnits.length === 0" class="text-center py-10 bg-muted/50 rounded-lg border">
-                <CheckCheck class="h-12 w-12 mx-auto text-muted-foreground/70 mb-4" />
-                <p class="text-muted-foreground font-medium">All units have been assigned to this group</p>
+
+              <div
+                v-if="availableUnits.length === 0"
+                class="text-center py-10 bg-muted/50 rounded-lg border"
+              >
+                <CheckCheck
+                  class="h-12 w-12 mx-auto text-muted-foreground/70 mb-4"
+                />
+                <p class="text-muted-foreground font-medium">
+                  All units have been assigned to this group
+                </p>
               </div>
 
               <div v-else class="space-y-3">
@@ -350,7 +372,9 @@
                   :key="unit.id"
                   @click="toggleUnitSelection(unit)"
                   class="cursor-pointer hover:shadow-sm transition-all duration-200"
-                  :class="{ 'border-green-500 bg-green-50/50': isUnitSelected(unit.id) }"
+                  :class="{
+                    'border-green-500 bg-green-50/50': isUnitSelected(unit.id),
+                  }"
                 >
                   <CardContent class="p-4">
                     <div class="flex items-center justify-between">
@@ -363,10 +387,14 @@
                         />
                         <div>
                           <h3 class="font-medium">{{ unit.title }}</h3>
-                          <p class="text-sm text-muted-foreground mt-1">{{ unit.description || 'No description available' }}</p>
+                          <p class="text-sm text-muted-foreground mt-1">
+                            {{ unit.description || "No description available" }}
+                          </p>
                         </div>
                       </div>
-                      <Badge variant="outline">Order: {{ unit.order || 'N/A' }}</Badge>
+                      <Badge variant="outline"
+                        >Order: {{ unit.order || "N/A" }}</Badge
+                      >
                     </div>
                   </CardContent>
                 </Card>
@@ -378,7 +406,11 @@
     </Card>
 
     <!-- Assignment Configuration -->
-    <Card id="configSection" v-if="selectedGroup && selectedUnits.length > 0" class="mb-8">
+    <Card
+      id="configSection"
+      v-if="selectedGroup && selectedUnits.length > 0"
+      class="mb-8"
+    >
       <CardHeader>
         <CardTitle class="flex items-center">
           <Settings class="h-5 w-5 mr-2 text-primary" />
@@ -394,7 +426,9 @@
             <div>
               <Label for="startDate" class="mb-1.5">Start Date</Label>
               <div class="relative">
-                <Calendar class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar
+                  class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                />
                 <Input
                   id="startDate"
                   type="date"
@@ -412,7 +446,9 @@
             <div>
               <Label for="endDate" class="mb-1.5">End Date</Label>
               <div class="relative">
-                <Calendar class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar
+                  class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                />
                 <Input
                   id="endDate"
                   type="date"
@@ -426,50 +462,69 @@
               </p>
             </div>
           </div>
-          
+
           <!-- Right Column -->
           <div class="space-y-6">
             <!-- Status with Radio Buttons -->
             <div>
               <Label class="mb-3">Assignment Status</Label>
-              
+
               <RadioGroup v-model="assignmentForm.status">
                 <div class="space-y-3">
-                  <Card 
-                    :class="assignmentForm.status === 'locked' ? 'border-orange-300 bg-orange-50/50' : ''" 
+                  <Card
+                    :class="
+                      assignmentForm.status === 'locked'
+                        ? 'border-orange-300 bg-orange-50/50'
+                        : ''
+                    "
                     class="cursor-pointer"
                   >
                     <CardContent class="p-3 flex items-center space-x-3">
                       <RadioGroupItem value="locked" id="status-locked" />
                       <div>
-                        <Label for="status-locked" class="flex items-center cursor-pointer">
+                        <Label
+                          for="status-locked"
+                          class="flex items-center cursor-pointer"
+                        >
                           <Lock class="h-4 w-4 mr-2 text-orange-500" />
                           Locked
                         </Label>
-                        <p class="text-sm text-muted-foreground mt-1">Content will be assigned but not accessible to students yet</p>
+                        <p class="text-sm text-muted-foreground mt-1">
+                          Content will be assigned but not accessible to
+                          students yet
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
-                  
-                  <Card 
-                    :class="assignmentForm.status === 'unlocked' ? 'border-green-300 bg-green-50/50' : ''" 
+
+                  <Card
+                    :class="
+                      assignmentForm.status === 'unlocked'
+                        ? 'border-green-300 bg-green-50/50'
+                        : ''
+                    "
                     class="cursor-pointer"
                   >
                     <CardContent class="p-3 flex items-center space-x-3">
                       <RadioGroupItem value="unlocked" id="status-unlocked" />
                       <div>
-                        <Label for="status-unlocked" class="flex items-center cursor-pointer">
+                        <Label
+                          for="status-unlocked"
+                          class="flex items-center cursor-pointer"
+                        >
                           <Unlock class="h-4 w-4 mr-2 text-green-500" />
                           Unlocked
                         </Label>
-                        <p class="text-sm text-muted-foreground mt-1">Students can access the content immediately</p>
+                        <p class="text-sm text-muted-foreground mt-1">
+                          Students can access the content immediately
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
               </RadioGroup>
             </div>
-            
+
             <!-- Assignment Summary -->
             <Card class="border-primary/30 bg-primary/5">
               <CardContent class="p-4">
@@ -480,11 +535,18 @@
                 <ul class="space-y-2 text-sm">
                   <li class="flex items-center">
                     <Check class="h-3.5 w-3.5 mr-2 text-green-600" />
-                    Assigning <span class="font-medium mx-1">{{ selectedUnits.length }}</span> units
+                    Assigning
+                    <span class="font-medium mx-1">{{
+                      selectedUnits.length
+                    }}</span>
+                    units
                   </li>
                   <li class="flex items-center">
                     <Check class="h-3.5 w-3.5 mr-2 text-green-600" />
-                    To group <span class="font-medium mx-1">{{ selectedGroup.name }}</span>
+                    To group
+                    <span class="font-medium mx-1">{{
+                      selectedGroup.name
+                    }}</span>
                   </li>
                   <li class="flex items-center">
                     <Check class="h-3.5 w-3.5 mr-2 text-green-600" />
@@ -529,287 +591,346 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { groupsAPI, courseAPI, unitsAPI, groupAssignedUnitsAPI } from '@/utils/api.js'
-import { useAuthStore } from '@/stores/auth.js'
+import { ref, computed, onMounted } from "vue";
+import {
+  groupsAPI,
+  courseAPI,
+  unitsAPI,
+  groupAssignedUnitsAPI,
+} from "@/utils/api.js";
+import { useAuthStore } from "@/stores/auth.js";
 
 // Shadcn Components
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Checkbox } from '@/components/ui/checkbox'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Lucide Icons
-import { Users, Users2, UserMinus, BookOpen, Calendar, Check, ChevronRight, Search, X, Filter, 
-         ArrowUpDown, Trash2, CheckCheck, BookCopy, Info, AlertCircle, Settings, Lock, Unlock,
-         Loader2, ClipboardCheck, Plus, UserX, CheckCircle2 } from 'lucide-vue-next'
+import {
+  Users,
+  BookOpen,
+  Calendar,
+  Check,
+  Search,
+  X,
+  Trash2,
+  CheckCheck,
+  Info,
+  AlertCircle,
+  Settings,
+  Lock,
+  Unlock,
+  Loader2,
+  ClipboardCheck,
+  Plus,
+  CheckCircle2,
+} from "lucide-vue-next";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
 // State
-const isLoading = ref(false)
-const isLoadingUnits = ref(false)
-const isLoadingAssignedUnits = ref(false)
-const isSubmitting = ref(false)
-const error = ref('')
-const successMessage = ref('')
-const groups = ref([])
-const courses = ref([])
-const units = ref([])
-const assignedUnits = ref([])
-const selectedGroup = ref(null)
-const selectedUnits = ref([])
-const searchQuery = ref('')
-const unitSearchQuery = ref('')
+const isLoading = ref(false);
+const isLoadingUnits = ref(false);
+const isLoadingAssignedUnits = ref(false);
+const isSubmitting = ref(false);
+const error = ref("");
+const successMessage = ref("");
+const groups = ref([]);
+const courses = ref([]);
+const units = ref([]);
+const assignedUnits = ref([]);
+const selectedGroup = ref(null);
+const selectedGroupId = ref("");
+const selectedUnits = ref([]);
+const searchQuery = ref("");
+const unitSearchQuery = ref("");
 
 // Form for assignment configuration
 const assignmentForm = ref({
-  start_date: new Date().toISOString().split('T')[0], // Today
-  end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 days
-  status: 'locked' // Default status
-})
+  start_date: new Date().toISOString().split("T")[0], // Today
+  end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0], // +30 days
+  status: "locked", // Default status
+});
 
 // Computed
 const filteredGroups = computed(() => {
   if (!searchQuery.value) {
-    return groups.value
+    return groups.value;
   }
 
-  const query = searchQuery.value.toLowerCase()
-  return groups.value.filter(group =>
+  const query = searchQuery.value.toLowerCase();
+  return groups.value.filter((group) =>
     group.name.toLowerCase().includes(query)
-  )
-})
+  );
+});
 
 const isUnitAlreadyAssigned = (unitId) => {
-  return assignedUnits.value.some(assigned => assigned.unit_id === unitId)
-}
+  return assignedUnits.value.some((assigned) => assigned.unit_id === unitId);
+};
 
 const filteredUnits = computed(() => {
-  if (!selectedGroup.value) return []
+  if (!selectedGroup.value) return [];
 
-  let result = units.value.filter(unit =>
-    unit.courseId === selectedGroup.value.level_id
-  )
+  let result = units.value.filter(
+    (unit) => unit.courseId === selectedGroup.value.level_id
+  );
 
   if (unitSearchQuery.value) {
-    const query = unitSearchQuery.value.toLowerCase()
-    result = result.filter(unit =>
-      unit.title.toLowerCase().includes(query) ||
-      (unit.description && unit.description.toLowerCase().includes(query))
-    )
+    const query = unitSearchQuery.value.toLowerCase();
+    result = result.filter(
+      (unit) =>
+        unit.title.toLowerCase().includes(query) ||
+        (unit.description && unit.description.toLowerCase().includes(query))
+    );
   }
 
-  return result
-})
+  return result;
+});
 
 const availableUnits = computed(() => {
-  return filteredUnits.value.filter(unit => !isUnitAlreadyAssigned(unit.id))
-})
+  return filteredUnits.value.filter((unit) => !isUnitAlreadyAssigned(unit.id));
+});
 
 const assignedFilteredUnits = computed(() => {
-  if (!selectedGroup.value || assignedUnits.value.length === 0) return []
-  
+  if (!selectedGroup.value || assignedUnits.value.length === 0) return [];
+
   // Get full unit details for assigned units
-  const result = assignedUnits.value.map(assigned => {
-    const fullUnitDetails = units.value.find(unit => unit.id === assigned.unit_id) || {}
+  const result = assignedUnits.value.map((assigned) => {
+    const fullUnitDetails =
+      units.value.find((unit) => unit.id === assigned.unit_id) || {};
     return {
       ...assigned,
-      title: fullUnitDetails.title || 'Unknown Unit',
-      description: fullUnitDetails.description || '',
-      order: fullUnitDetails.order
-    }
-  })
-  
+      title: fullUnitDetails.title || "Unknown Unit",
+      description: fullUnitDetails.description || "",
+      order: fullUnitDetails.order,
+    };
+  });
+
   if (unitSearchQuery.value) {
-    const query = unitSearchQuery.value.toLowerCase()
-    return result.filter(unit =>
-      unit.title.toLowerCase().includes(query) ||
-      (unit.description && unit.description.toLowerCase().includes(query))
-    )
+    const query = unitSearchQuery.value.toLowerCase();
+    return result.filter(
+      (unit) =>
+        unit.title.toLowerCase().includes(query) ||
+        (unit.description && unit.description.toLowerCase().includes(query))
+    );
   }
-  
-  return result
-})
+
+  return result;
+});
 
 // Methods
 const fetchGroups = async () => {
-  isLoading.value = true
-  error.value = ''
+  isLoading.value = true;
+  error.value = "";
 
   try {
-    const response = await groupsAPI.getByTeacherId(authStore.userId)
-    const groupsData = response.data || response
-    groups.value = Array.isArray(groupsData) ? groupsData : []
+    const response = await groupsAPI.getByTeacherId(authStore.userId);
+    const groupsData = response.data || response;
+    groups.value = Array.isArray(groupsData) ? groupsData : [];
   } catch (err) {
-    error.value = `Failed to fetch groups: ${err.message || 'Unknown error'}`
-    console.error('Error fetching groups:', err)
-    groups.value = []
+    error.value = `Failed to fetch groups: ${err.message || "Unknown error"}`;
+    console.error("Error fetching groups:", err);
+    groups.value = [];
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const fetchCourses = async () => {
   try {
-    const response = await courseAPI.getAll()
-    const coursesData = response.data || response
-    courses.value = Array.isArray(coursesData) ? coursesData : []
+    const response = await courseAPI.getAll();
+    const coursesData = response.data || response;
+    courses.value = Array.isArray(coursesData) ? coursesData : [];
   } catch (err) {
-    console.error('Error fetching courses:', err)
-    courses.value = []
+    console.error("Error fetching courses:", err);
+    courses.value = [];
   }
-}
+};
 
 const fetchUnits = async () => {
-  if (!selectedGroup.value || !selectedGroup.value.level_id) return
+  if (!selectedGroup.value || !selectedGroup.value.level_id) return;
 
-  isLoadingUnits.value = true
+  isLoadingUnits.value = true;
   try {
-    const response = await unitsAPI.getByCourse(selectedGroup.value.level_id)
-    const unitsData = response.data || response
-    units.value = Array.isArray(unitsData) ? unitsData : []
+    const response = await unitsAPI.getByCourse(selectedGroup.value.level_id);
+    const unitsData = response.data || response;
+    units.value = Array.isArray(unitsData) ? unitsData : [];
   } catch (err) {
-    console.error('Error fetching units:', err)
-    units.value = []
+    console.error("Error fetching units:", err);
+    units.value = [];
   } finally {
-    isLoadingUnits.value = false
+    isLoadingUnits.value = false;
   }
-}
+};
 
 const fetchAssignedUnits = async () => {
-  if (!selectedGroup.value || !selectedGroup.value.id) return
-  
-  isLoadingAssignedUnits.value = true
+  if (!selectedGroup.value || !selectedGroup.value.id) return;
+
+  isLoadingAssignedUnits.value = true;
   try {
-    const response = await groupAssignedUnitsAPI.getByGroupId(selectedGroup.value.id)
-    const assignedUnitsData = response.data || response
-    assignedUnits.value = Array.isArray(assignedUnitsData) ? assignedUnitsData : []
+    const response = await groupAssignedUnitsAPI.getByGroupId(
+      selectedGroup.value.id
+    );
+    const assignedUnitsData = response.data || response;
+    assignedUnits.value = Array.isArray(assignedUnitsData)
+      ? assignedUnitsData
+      : [];
   } catch (err) {
-    console.error('Error fetching assigned units:', err)
-    assignedUnits.value = []
+    console.error("Error fetching assigned units:", err);
+    assignedUnits.value = [];
   } finally {
-    isLoadingAssignedUnits.value = false
+    isLoadingAssignedUnits.value = false;
   }
-}
+};
 
 const selectGroup = (group) => {
-  selectedGroup.value = group
-  selectedUnits.value = []
-  assignedUnits.value = []
-  fetchUnits()
-  fetchAssignedUnits()
-}
+  selectedGroup.value = group;
+  selectedGroupId.value = group.id;
+  selectedUnits.value = [];
+  assignedUnits.value = [];
+  fetchUnits();
+  fetchAssignedUnits();
+};
+
+const handleGroupSelection = async (groupId) => {
+  if (groupId) {
+    const group = groups.value.find((g) => g.id === groupId);
+    if (group) {
+      selectGroup(group);
+    }
+  } else {
+    selectedGroup.value = null;
+    selectedGroupId.value = "";
+    selectedUnits.value = [];
+    assignedUnits.value = [];
+    units.value = [];
+  }
+};
 
 const toggleUnitSelection = (unit) => {
-  const index = selectedUnits.value.findIndex(u => u.id === unit.id)
+  const index = selectedUnits.value.findIndex((u) => u.id === unit.id);
   if (index === -1) {
-    selectedUnits.value.push(unit)
+    selectedUnits.value.push(unit);
   } else {
-    selectedUnits.value.splice(index, 1)
+    selectedUnits.value.splice(index, 1);
   }
-}
+};
 
 const isUnitSelected = (unitId) => {
-  return selectedUnits.value.some(unit => unit.id === unitId)
-}
+  return selectedUnits.value.some((unit) => unit.id === unitId);
+};
 
 const selectAllAvailableUnits = () => {
   // Add all available units that aren't already selected
-  availableUnits.value.forEach(unit => {
+  availableUnits.value.forEach((unit) => {
     if (!isUnitSelected(unit.id)) {
-      selectedUnits.value.push(unit)
+      selectedUnits.value.push(unit);
     }
-  })
-  successMessage.value = `Selected all ${availableUnits.value.length} available units`
-}
+  });
+  successMessage.value = `Selected all ${availableUnits.value.length} available units`;
+};
 
 const deselectAllUnits = () => {
-  selectedUnits.value = []
-  successMessage.value = 'Cleared all selections'
-}
+  selectedUnits.value = [];
+  successMessage.value = "Cleared all selections";
+};
 
 const unassignUnit = async (assignedUnit) => {
-  if (!selectedGroup.value) return
-  
-  error.value = ''
-  successMessage.value = ''
-  
+  if (!selectedGroup.value) return;
+
+  error.value = "";
+  successMessage.value = "";
+
   try {
     // Use the delete method from groupAssignedUnitsAPI
-    await groupAssignedUnitsAPI.delete(assignedUnit.id)
-    
+    await groupAssignedUnitsAPI.delete(assignedUnit.id);
+
     // Remove from local state
-    assignedUnits.value = assignedUnits.value.filter(unit => unit.id !== assignedUnit.id)
-    
-    successMessage.value = `"${assignedUnit.title}" has been unassigned from this group`
+    assignedUnits.value = assignedUnits.value.filter(
+      (unit) => unit.id !== assignedUnit.id
+    );
+
+    successMessage.value = `"${assignedUnit.title}" has been unassigned from this group`;
   } catch (err) {
-    error.value = `Failed to unassign unit: ${err.message || 'Unknown error'}`
-    console.error('Error unassigning unit:', err)
+    error.value = `Failed to unassign unit: ${err.message || "Unknown error"}`;
+    console.error("Error unassigning unit:", err);
   }
-}
+};
 
 const getCourseTitle = (courseId) => {
-  const course = courses.value.find(c => c.id === courseId)
-  return course ? course.title : 'Unknown Course'
-}
+  const course = courses.value.find((c) => c.id === courseId);
+  return course ? course.title : "Unknown Course";
+};
 
 const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
+  if (!dateString) return "N/A";
   try {
-    return new Date(dateString).toLocaleDateString()
+    return new Date(dateString).toLocaleDateString();
   } catch {
-    return 'Invalid Date'
+    return "Invalid Date";
   }
-}
+};
 
 const submitAssignments = async () => {
   if (!selectedGroup.value || selectedUnits.value.length === 0) {
-    error.value = 'Please select a group and at least one unit'
-    return
+    error.value = "Please select a group and at least one unit";
+    return;
   }
 
-  isSubmitting.value = true
-  error.value = ''
-  successMessage.value = ''
+  isSubmitting.value = true;
+  error.value = "";
+  successMessage.value = "";
 
   try {
-    const assignmentPromises = selectedUnits.value.map(unit => {
+    const assignmentPromises = selectedUnits.value.map((unit) => {
       return groupsAPI.assignUnits({
         group_id: selectedGroup.value.id,
         unit_id: unit.id,
         teacher_id: authStore.userId,
         start_date: assignmentForm.value.start_date,
         end_date: assignmentForm.value.end_date,
-        status: assignmentForm.value.status
-      })
-    })
+        status: assignmentForm.value.status,
+      });
+    });
 
-    await Promise.all(assignmentPromises)
+    await Promise.all(assignmentPromises);
 
-    successMessage.value = `Successfully assigned ${selectedUnits.value.length} units with all their lessons to ${selectedGroup.value.name}`
+    successMessage.value = `Successfully assigned ${selectedUnits.value.length} units with all their lessons to ${selectedGroup.value.name}`;
     selectedUnits.value = [];
     window.location.reload();
   } catch (err) {
-    error.value = `Failed to assign units: ${err.message || 'Unknown error'}`
-    console.error('Error assigning units:', err)
+    error.value = `Failed to assign units: ${err.message || "Unknown error"}`;
+    console.error("Error assigning units:", err);
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    fetchGroups(),
-    fetchCourses()
-  ])
-})
+  await Promise.all([fetchGroups(), fetchCourses()]);
+});
 </script>

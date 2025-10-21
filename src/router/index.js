@@ -129,6 +129,18 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/homework-check",
+          name: "HomeworkCheck",
+          component: () => import("../views/HomeworkCheckView.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/homework-check/:homeworkId",
+          name: "HomeworkCheckDetails",
+          component: () => import("../views/HomeworkCheckDetails.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/messages",
           name: "messages",
           component: () => import("../views/MessagesView.vue"),

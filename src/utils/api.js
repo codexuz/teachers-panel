@@ -17,34 +17,73 @@ const getRefreshTokenData = () => {
 // Group Homeworks API functions
 export const groupHomeworksAPI = {
   // Get all homeworks for a group
-  getByGroupId: (groupId) =>
-    apiRequest(`/group-homeworks/group/${groupId}`),
-  
+  getByGroupId: (groupId) => apiRequest(`/group-homeworks/group/${groupId}`),
+
   // Get all homeworks by teacher ID
   getByTeacherId: (teacherId) =>
     apiRequest(`/group-homeworks/teacher/${teacherId}`),
-    
+
   // Get a single homework by ID
-  getById: (id) =>
-    apiRequest(`/group-homeworks/${id}`),
-    
+  getById: (id) => apiRequest(`/group-homeworks/${id}`),
+
   // Create new homework assignment
   create: (homeworkData) =>
     apiRequest("/group-homeworks", {
       method: "POST",
       body: JSON.stringify(homeworkData),
     }),
-    
+
   // Update homework assignment
   update: (id, homeworkData) =>
     apiRequest(`/group-homeworks/${id}`, {
       method: "PATCH",
       body: JSON.stringify(homeworkData),
     }),
-    
+
   // Delete homework assignment
   delete: (id) =>
     apiRequest(`/group-homeworks/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Homework Submissions API functions
+export const homeworkSubmissionsAPI = {
+  // Get all submissions for a specific homework
+  getByHomeworkId: (homeworkId) =>
+    apiRequest(`/homework-submissions/homework/${homeworkId}`),
+
+  // Get a single submission by ID
+  getById: (id) => apiRequest(`/homework-submissions/${id}`),
+
+  // Get submissions by student ID
+  getByStudentId: (studentId) =>
+    apiRequest(`/homework-submissions/student/${studentId}`),
+
+  // Create new homework submission
+  create: (submissionData) =>
+    apiRequest("/homework-submissions", {
+      method: "POST",
+      body: JSON.stringify(submissionData),
+    }),
+
+  // Update homework submission
+  update: (id, submissionData) =>
+    apiRequest(`/homework-submissions/sections/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(submissionData),
+    }),
+
+  // Grade homework submission
+  grade: (id, gradeData) =>
+    apiRequest(`/homework-submissions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(gradeData),
+    }),
+
+  // Delete homework submission
+  delete: (id) =>
+    apiRequest(`/homework-submissions/${id}`, {
       method: "DELETE",
     }),
 };
@@ -333,7 +372,7 @@ export const courseAPI = {
 export const unitsAPI = {
   getAll: () => apiRequest(`/units`),
   // Get units by course ID
-  getByCourse: (courseId) => apiRequest(`/units/course/${courseId}`),
+  getByCourseId: (courseId) => apiRequest(`/units/course/${courseId}`),
 
   // Get a single unit by ID
   getById: (id) => apiRequest(`/units/${id}`),
@@ -429,7 +468,8 @@ export const pronunciationAPI = {
   getAll: () => apiRequest("/pronunciation-exercise"),
 
   // Get pronunciation exercises by speaking ID
-  getBySpeakingId: (speakingId) => apiRequest(`/pronunciation-exercise/speaking/${speakingId}`),
+  getBySpeakingId: (speakingId) =>
+    apiRequest(`/pronunciation-exercise/speaking/${speakingId}`),
 
   // Get a single pronunciation exercise by ID
   getById: (id) => apiRequest(`/pronunciation-exercise/${id}`),
@@ -461,7 +501,8 @@ export const ieltsPart1API = {
   getAll: () => apiRequest("/ieltspart1-question"),
 
   // Get IELTS Part 1 questions by speaking ID
-  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart1-question/speaking/${speakingId}`),
+  getBySpeakingId: (speakingId) =>
+    apiRequest(`/ieltspart1-question/speaking/${speakingId}`),
 
   // Get a single IELTS Part 1 question by ID
   getById: (id) => apiRequest(`/ieltspart1-question/${id}`),
@@ -493,7 +534,8 @@ export const ieltsPart2API = {
   getAll: () => apiRequest("/ieltspart2-question"),
 
   // Get IELTS Part 2 questions by speaking ID
-  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart2-question/speaking/${speakingId}`),
+  getBySpeakingId: (speakingId) =>
+    apiRequest(`/ieltspart2-question/speaking/${speakingId}`),
 
   // Get a single IELTS Part 2 question by ID
   getById: (id) => apiRequest(`/ieltspart2-question/${id}`),
@@ -525,7 +567,8 @@ export const ieltsPart3API = {
   getAll: () => apiRequest("/ieltspart3-question"),
 
   // Get IELTS Part 3 questions by speaking ID
-  getBySpeakingId: (speakingId) => apiRequest(`/ieltspart3-question/speaking/${speakingId}`),
+  getBySpeakingId: (speakingId) =>
+    apiRequest(`/ieltspart3-question/speaking/${speakingId}`),
 
   // Get a single IELTS Part 3 question by ID
   getById: (id) => apiRequest(`/ieltspart3-question/${id}`),
@@ -984,8 +1027,10 @@ export const groupStudentsAPI = {
 // Attendance API functions
 export const attendanceAPI = {
   // Get attendance by group ID and date range
-  getByGroupIdAndDateRange: (groupId, startDate, endDate) => 
-    apiRequest(`/attendance/group/${groupId}/daterange?startDate=${startDate}&endDate=${endDate}`),
+  getByGroupIdAndDateRange: (groupId, startDate, endDate) =>
+    apiRequest(
+      `/attendance/group/${groupId}/daterange?startDate=${startDate}&endDate=${endDate}`
+    ),
 
   // Create attendance record
   create: (attendanceData) =>
@@ -998,6 +1043,29 @@ export const attendanceAPI = {
   update: (id, attendanceData) =>
     apiRequest(`/attendance/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({status: attendanceData}),
+      body: JSON.stringify({ status: attendanceData }),
+    }),
+};
+
+// Speaking Responses API functions
+export const speakingResponsesAPI = {
+  // Get speaking responses by speaking ID
+  getBySpeakingId: (speakingId) =>
+    apiRequest(`/speaking-responses/speaking/${speakingId}`),
+
+  // Get speaking response by ID
+  getById: (id) => apiRequest(`/speaking-responses/${id}`),
+
+  // Update speaking response (for grading)
+  update: (id, responseData) =>
+    apiRequest(`/speaking-responses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(responseData),
+    }),
+
+  // Delete speaking response
+  delete: (id) =>
+    apiRequest(`/speaking-responses/${id}`, {
+      method: "DELETE",
     }),
 };
