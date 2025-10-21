@@ -80,6 +80,18 @@ const handleLogout = async () => {
           <i class="fas fa-pencil-alt mr-3"></i>
           Group Homework
         </router-link>
+        <router-link
+          to="/homework-check"
+          class="flex items-center px-6 py-3"
+          :class="
+            $route.path.startsWith('/homework-check')
+              ? 'text-white bg-blue-600'
+              : 'text-gray-700 hover:bg-gray-50'
+          "
+        >
+          <i class="fas fa-check-circle mr-3"></i>
+          Homework Check
+        </router-link>
         <!----
                     <router-link to="/exams" class="flex items-center px-6 py-3"
                         :class="$route.path === '/exams' ? 'text-white bg-blue-600' : 'text-gray-700 hover:bg-gray-50'">
