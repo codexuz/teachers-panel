@@ -131,7 +131,7 @@ export const groupAssignedLessonsAPI = {
   // Update lesson assignment
   update: (id, assignmentData) =>
     apiRequest(`/group-assigned-lessons/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(assignmentData),
     }),
 
