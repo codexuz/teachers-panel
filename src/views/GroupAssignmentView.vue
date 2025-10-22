@@ -864,15 +864,40 @@ const filteredGroups = computed(() => {
 });
 
 const isUnitAlreadyAssigned = (unitId) => {
-  return assignedUnits.value.some((assigned) => assigned.unit_id === unitId);
+  console.log(`Checking if unit ${unitId} is already assigned`);
+  console.log("assignedUnits.value:", assignedUnits.value);
+
+  const isAssigned = assignedUnits.value.some((assigned) => {
+    console.log(
+      `Comparing assigned.unit_id: ${assigned.unit_id} with unitId: ${unitId}`
+    );
+    return assigned.unit_id === unitId;
+  });
+
+  console.log(`Unit ${unitId} isAssigned: ${isAssigned}`);
+  return isAssigned;
 };
 
 const filteredUnits = computed(() => {
-  if (!selectedGroup.value) return [];
+  console.log("=== DEBUG: filteredUnits computed ===");
+  console.log("selectedGroup.value:", selectedGroup.value);
+  console.log("units.value:", units.value);
 
-  let result = units.value.filter(
-    (unit) => unit.courseId === selectedGroup.value.level_id
-  );
+  if (!selectedGroup.value) {
+    console.log("No selected group, returning empty array");
+    return [];
+  }
+
+  console.log("selectedGroup.level_id:", selectedGroup.value.level_id);
+
+  let result = units.value.filter((unit) => {
+    console.log(
+      `Unit ${unit.title}: unit.courseId=${unit.courseId}, selectedGroup.level_id=${selectedGroup.value.level_id}`
+    );
+    return unit.courseId === selectedGroup.value.level_id;
+  });
+
+  console.log("Units after courseId filter:", result);
 
   if (unitSearchQuery.value) {
     const query = unitSearchQuery.value.toLowerCase();
@@ -881,13 +906,27 @@ const filteredUnits = computed(() => {
         unit.title.toLowerCase().includes(query) ||
         (unit.description && unit.description.toLowerCase().includes(query))
     );
+    console.log("Units after search filter:", result);
   }
 
+  console.log("Final filtered units:", result);
   return result;
 });
 
 const availableUnits = computed(() => {
-  return filteredUnits.value.filter((unit) => !isUnitAlreadyAssigned(unit.id));
+  console.log("=== DEBUG: availableUnits computed ===");
+  console.log("filteredUnits.value:", filteredUnits.value);
+  console.log("assignedUnits.value:", assignedUnits.value);
+  console.log("selectedGroup.value:", selectedGroup.value);
+
+  const available = filteredUnits.value.filter((unit) => {
+    const isAssigned = isUnitAlreadyAssigned(unit.id);
+    console.log(`Unit ${unit.title} (${unit.id}) - isAssigned: ${isAssigned}`);
+    return !isAssigned;
+  });
+
+  console.log("Final available units:", available);
+  return available;
 });
 
 const assignedFilteredUnits = computed(() => {
@@ -947,13 +986,22 @@ const fetchCourses = async () => {
 };
 
 const fetchUnits = async () => {
-  if (!selectedGroup.value || !selectedGroup.value.level_id) return;
+  if (!selectedGroup.value || !selectedGroup.value.level_id) {
+    console.log("Cannot fetch units - no selected group or level_id");
+    return;
+  }
+
+  console.log("=== DEBUG: fetchUnits ===");
+  console.log("selectedGroup.value.level_id:", selectedGroup.value.level_id);
 
   isLoadingUnits.value = true;
   try {
-    const response = await unitsAPI.getByCourse(selectedGroup.value.level_id);
+    const response = await unitsAPI.getByCourseId(selectedGroup.value.level_id);
+    console.log("Units API response:", response);
     const unitsData = response.data || response;
+    console.log("Units data:", unitsData);
     units.value = Array.isArray(unitsData) ? unitsData : [];
+    console.log("Final units.value:", units.value);
   } catch (err) {
     console.error("Error fetching units:", err);
     units.value = [];
@@ -963,17 +1011,26 @@ const fetchUnits = async () => {
 };
 
 const fetchAssignedUnits = async () => {
-  if (!selectedGroup.value || !selectedGroup.value.id) return;
+  if (!selectedGroup.value || !selectedGroup.value.id) {
+    console.log("Cannot fetch assigned units - no selected group or group id");
+    return;
+  }
+
+  console.log("=== DEBUG: fetchAssignedUnits ===");
+  console.log("selectedGroup.value.id:", selectedGroup.value.id);
 
   isLoadingAssignedUnits.value = true;
   try {
     const response = await groupAssignedUnitsAPI.getByGroupId(
       selectedGroup.value.id
     );
+    console.log("Assigned units API response:", response);
     const assignedUnitsData = response.data || response;
+    console.log("Assigned units data:", assignedUnitsData);
     assignedUnits.value = Array.isArray(assignedUnitsData)
       ? assignedUnitsData
       : [];
+    console.log("Final assignedUnits.value:", assignedUnits.value);
   } catch (err) {
     console.error("Error fetching assigned units:", err);
     assignedUnits.value = [];
