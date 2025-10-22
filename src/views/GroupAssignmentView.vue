@@ -178,8 +178,6 @@
               No groups available
             </p>
           </div>
-
-         
         </div>
       </CardContent>
     </Card>
@@ -266,40 +264,49 @@
                   class="border-blue-200 bg-blue-50/50"
                 >
                   <CardContent class="p-4">
+                    <!-- Unit Header -->
                     <div class="flex items-center justify-between">
                       <div class="flex-1">
-                        <h3 class="font-medium">{{ unit.title }}</h3>
+                        <div class="flex items-center gap-2">
+                          <h3 class="font-medium">
+                            {{ unit.unit?.title || unit.title }}
+                          </h3>
+                          <Button
+                            v-if="unit.lessons && unit.lessons.length > 0"
+                            variant="ghost"
+                            size="sm"
+                            @click="toggleUnitExpansion(unit.id)"
+                            class="p-1 h-6 w-6"
+                          >
+                            <ChevronDown
+                              v-if="!isUnitExpanded(unit.id)"
+                              class="h-4 w-4"
+                            />
+                            <ChevronUp v-else class="h-4 w-4" />
+                          </Button>
+                          <Badge variant="outline" class="text-xs">
+                            {{ unit.lessons ? unit.lessons.length : 0 }} lessons
+                          </Badge>
+                        </div>
                         <p class="text-sm text-muted-foreground mt-1">
-                          {{ unit.description || "No description available" }}
+                          {{
+                            unit.unit?.description ||
+                            unit.description ||
+                            "No description available"
+                          }}
                         </p>
                         <div
-                          class="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground"
+                          class="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground"
                         >
                           <div>
-                            <span class="font-medium">Start Date:</span>
-                            {{
-                              unit.start_date
-                                ? new Date(unit.start_date).toLocaleDateString()
-                                : "Not set"
-                            }}
-                          </div>
-                          <div>
-                            <span class="font-medium">End Date:</span>
-                            {{
-                              unit.end_date
-                                ? new Date(unit.end_date).toLocaleDateString()
-                                : "No expiration"
-                            }}
+                            <span class="font-medium">Created:</span>
+                            {{ formatDate(unit.createdAt) }}
                           </div>
                           <div>
                             <span class="font-medium">Status:</span>
                             <Badge
                               variant="outline"
-                              :class="
-                                unit.status === 'unlocked'
-                                  ? 'bg-green-100 text-green-800 border-green-200'
-                                  : 'bg-orange-100 text-orange-800 border-orange-200'
-                              "
+                              :class="getLessonStatusVariant(unit.status)"
                             >
                               {{
                                 unit.status === "unlocked"
@@ -307,6 +314,10 @@
                                   : "Locked"
                               }}
                             </Badge>
+                          </div>
+                          <div>
+                            <span class="font-medium">Teacher:</span>
+                            Teacher
                           </div>
                         </div>
                       </div>
@@ -319,6 +330,157 @@
                       >
                         <Trash2 class="h-4 w-4" />
                       </Button>
+                    </div>
+
+                    <!-- Lessons List (Expandable) -->
+                    <div
+                      v-if="
+                        unit.lessons &&
+                        unit.lessons.length > 0 &&
+                        isUnitExpanded(unit.id)
+                      "
+                      class="mt-4 border-t pt-4"
+                    >
+                      <h4 class="text-sm font-medium mb-3 text-gray-700">
+                        Lessons in this Unit:
+                      </h4>
+                      <div class="space-y-2">
+                        <div
+                          v-for="lesson in unit.lessons"
+                          :key="lesson.id"
+                          class="bg-white p-3 rounded-lg border border-gray-200"
+                        >
+                          <!-- Lesson Header -->
+                          <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                              <h5 class="font-medium text-sm">
+                                {{ lesson.lesson?.title || "Lesson" }}
+                              </h5>
+                              <Badge variant="outline" class="text-xs">
+                                Order {{ lesson.lesson?.order || "N/A" }}
+                              </Badge>
+                            </div>
+                            <Button
+                              v-if="editingLesson !== lesson.id"
+                              variant="outline"
+                              size="sm"
+                              @click="startEditingLesson(lesson)"
+                              class="h-7 px-2 text-xs"
+                            >
+                              <Edit class="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+
+                          <!-- Lesson Details (View Mode) -->
+                          <div
+                            v-if="editingLesson !== lesson.id"
+                            class="grid grid-cols-3 gap-3 text-xs text-gray-600"
+                          >
+                            <div>
+                              <span class="font-medium">Start:</span>
+                              {{
+                                lesson.start_from
+                                  ? formatDate(lesson.start_from)
+                                  : "Not set"
+                              }}
+                            </div>
+                            <div>
+                              <span class="font-medium">End:</span>
+                              {{
+                                lesson.end_at
+                                  ? formatDate(lesson.end_at)
+                                  : "No end date"
+                              }}
+                            </div>
+                            <div>
+                              <span class="font-medium">Status:</span>
+                              <Badge
+                                variant="outline"
+                                :class="getLessonStatusVariant(lesson.status)"
+                                class="ml-1"
+                              >
+                                {{
+                                  lesson.status === "unlocked"
+                                    ? "Unlocked"
+                                    : "Locked"
+                                }}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <!-- Lesson Details (Edit Mode) -->
+                          <div v-else class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <!-- Start From -->
+                              <div>
+                                <Label class="text-xs">Start From</Label>
+                                <Input
+                                  v-model="lessonEditForm.start_from"
+                                  type="date"
+                                  class="h-8 text-xs"
+                                />
+                              </div>
+                              <!-- End At -->
+                              <div>
+                                <Label class="text-xs">End At</Label>
+                                <Input
+                                  v-model="lessonEditForm.end_at"
+                                  type="date"
+                                  class="h-8 text-xs"
+                                />
+                              </div>
+                              <!-- Status -->
+                              <div>
+                                <Label class="text-xs">Status</Label>
+                                <Select v-model="lessonEditForm.status">
+                                  <SelectTrigger class="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="locked"
+                                      >Locked</SelectItem
+                                    >
+                                    <SelectItem value="unlocked"
+                                      >Unlocked</SelectItem
+                                    >
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <!-- Edit Actions -->
+                            <div class="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                @click="cancelEditingLesson"
+                                class="h-7 px-2 text-xs"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                @click="updateLesson(lesson)"
+                                :disabled="isSubmitting"
+                                class="h-7 px-2 text-xs"
+                              >
+                                <Save class="h-3 w-3 mr-1" />
+                                Save
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- No Lessons Message -->
+                    <div
+                      v-else-if="isUnitExpanded(unit.id)"
+                      class="mt-4 border-t pt-4 text-center text-sm text-muted-foreground"
+                    >
+                      No lessons assigned to this unit yet.
                     </div>
                   </CardContent>
                 </Card>
@@ -597,6 +759,7 @@ import {
   courseAPI,
   unitsAPI,
   groupAssignedUnitsAPI,
+  groupAssignedLessonsAPI,
 } from "@/utils/api.js";
 import { useAuthStore } from "@/stores/auth.js";
 
@@ -645,6 +808,10 @@ import {
   ClipboardCheck,
   Plus,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Edit,
+  Save,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();
@@ -665,6 +832,15 @@ const selectedGroupId = ref("");
 const selectedUnits = ref([]);
 const searchQuery = ref("");
 const unitSearchQuery = ref("");
+
+// Lesson management state
+const expandedUnits = ref(new Set());
+const editingLesson = ref(null);
+const lessonEditForm = ref({
+  start_from: "",
+  end_at: "",
+  status: "",
+});
 
 // Form for assignment configuration
 const assignmentForm = ref({
@@ -892,6 +1068,83 @@ const formatDate = (dateString) => {
   } catch {
     return "Invalid Date";
   }
+};
+
+// Lesson management methods
+const toggleUnitExpansion = (unitId) => {
+  if (expandedUnits.value.has(unitId)) {
+    expandedUnits.value.delete(unitId);
+  } else {
+    expandedUnits.value.add(unitId);
+  }
+};
+
+const isUnitExpanded = (unitId) => {
+  return expandedUnits.value.has(unitId);
+};
+
+const startEditingLesson = (lesson) => {
+  editingLesson.value = lesson.id;
+  lessonEditForm.value = {
+    start_from: lesson.start_from || "",
+    end_at: lesson.end_at || "",
+    status: lesson.status || "locked",
+  };
+};
+
+const cancelEditingLesson = () => {
+  editingLesson.value = null;
+  lessonEditForm.value = {
+    start_from: "",
+    end_at: "",
+    status: "",
+  };
+};
+
+const updateLesson = async (lesson) => {
+  try {
+    isSubmitting.value = true;
+    error.value = "";
+
+    const updateData = {
+      start_from: lessonEditForm.value.start_from,
+      end_at: lessonEditForm.value.end_at,
+      status: lessonEditForm.value.status,
+    };
+
+    await groupAssignedLessonsAPI.update(lesson.id, updateData);
+
+    // Update the lesson in local state
+    const unitIndex = assignedUnits.value.findIndex(
+      (unit) => unit.lessons && unit.lessons.some((l) => l.id === lesson.id)
+    );
+
+    if (unitIndex !== -1) {
+      const lessonIndex = assignedUnits.value[unitIndex].lessons.findIndex(
+        (l) => l.id === lesson.id
+      );
+      if (lessonIndex !== -1) {
+        Object.assign(
+          assignedUnits.value[unitIndex].lessons[lessonIndex],
+          updateData
+        );
+      }
+    }
+
+    successMessage.value = "Lesson updated successfully";
+    cancelEditingLesson();
+  } catch (err) {
+    error.value = `Failed to update lesson: ${err.message || "Unknown error"}`;
+    console.error("Error updating lesson:", err);
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const getLessonStatusVariant = (status) => {
+  return status === "unlocked"
+    ? "bg-green-100 text-green-800 border-green-200"
+    : "bg-orange-100 text-orange-800 border-orange-200";
 };
 
 const submitAssignments = async () => {
