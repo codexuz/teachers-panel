@@ -32,16 +32,34 @@ const router = createRouter({
           component: () => import("../views/CoursesView.vue"),
           meta: { requiresAuth: true },
         },
+         {
+          path: "/javlon/courses",
+          name: "javlon-courses",
+          component: () => import("../views/javlon/CoursesView.vue"),
+          meta: { requiresAuth: true },
+        },
         {
           path: "/units",
           name: "units",
           component: () => import("../views/UnitsView.vue"),
           meta: { requiresAuth: true },
         },
+         {
+          path: "/javlon/units",
+          name: "javlon-units",
+          component: () => import("../views/javlon/UnitsView.vue"),
+          meta: { requiresAuth: true },
+        },
         {
           path: "/lessons",
           name: "lessons",
           component: () => import("../views/LessonsView.vue"),
+          meta: { requiresAuth: true },
+        },
+         {
+          path: "/javlon/lessons",
+          name: "javlon-lessons",
+          component: () => import("../views/javlon/LessonsView.vue"),
           meta: { requiresAuth: true },
         },
         {

@@ -68,6 +68,8 @@
             <TableHead>Level</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>Units</TableHead>
+            <TableHead class="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,6 +111,23 @@
             </TableCell>
             <TableCell class="text-muted-foreground text-sm">
               {{ course.createdAt ? new Date(course.createdAt).toLocaleDateString() : 'Unknown' }}
+            </TableCell>
+            <TableCell class="text-muted-foreground text-sm">
+              {{ course.unitCount || 0 }} units
+            </TableCell>
+            <TableCell class="text-right">
+              <div class="flex justify-end gap-1">
+                <Button variant="ghost" size="icon" @click="editCourse(course)" title="Edit">
+                  <Pencil class="h-4 w-4 text-blue-600" />
+                </Button>
+                <Button variant="ghost" size="icon" @click="toggleStatus(course)" :title="course.isActive ? 'Deactivate' : 'Activate'">
+                  <Lock v-if="course.isActive" class="h-4 w-4 text-gray-600" />
+                  <Unlock v-else class="h-4 w-4 text-green-600" />
+                </Button>
+                <Button variant="ghost" size="icon" @click="deleteCourse(course)" title="Delete">
+                  <Trash2 class="h-4 w-4 text-red-600" />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         </TableBody>

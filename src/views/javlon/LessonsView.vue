@@ -683,6 +683,8 @@ watch([selectedCourse, selectedUnit, searchQuery], () => {
             <TableHead>Course & Module</TableHead>
             <TableHead>Order</TableHead>
             <TableHead>Type</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -715,6 +717,33 @@ watch([selectedCourse, selectedUnit, searchQuery], () => {
               <Badge :variant="lesson.type === 'lesson' ? 'default' : lesson.type === 'practice' ? 'secondary' : 'destructive'">
                 {{ lesson.type }}
               </Badge>
+            </TableCell>
+            <TableCell>
+              <Button
+                @click="toggleLessonStatus(lesson)"
+                :variant="lesson.isActive ? 'default' : 'outline'"
+                size="sm"
+              >
+                {{ lesson.isActive ? 'Active' : 'Inactive' }}
+              </Button>
+            </TableCell>
+            <TableCell>
+              <div class="flex gap-2">
+                <Button
+                  @click="openEditModal(lesson)"
+                  variant="ghost"
+                  size="icon"
+                >
+                  <Edit class="h-4 w-4" />
+                </Button>
+                <Button
+                  @click="deleteLesson(lesson.id)"
+                  variant="ghost"
+                  size="icon"
+                >
+                  <Trash2 class="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         </TableBody>

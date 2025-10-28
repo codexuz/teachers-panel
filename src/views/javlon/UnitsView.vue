@@ -100,6 +100,8 @@
           <TableHead>Course</TableHead>
           <TableHead>Order</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Lessons</TableHead>
+          <TableHead class="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -129,6 +131,38 @@
             <Badge :variant="unit.isActive ? 'default' : 'outline'">
               {{ unit.isActive ? 'Active' : 'Inactive' }}
             </Badge>
+          </TableCell>
+          <TableCell>
+            {{ unit.lessonCount || 0 }} lessons
+          </TableCell>
+          <TableCell class="text-right">
+            <div class="flex justify-end gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                @click="editUnit(unit)"
+                title="Edit"
+              >
+                <PencilLine class="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                @click="toggleStatus(unit)"
+                :title="unit.isActive ? 'Deactivate' : 'Activate'"
+              >
+                <component :is="unit.isActive ? 'Lock' : 'Unlock'" class="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                @click="deleteUnit(unit)"
+                class="text-destructive hover:text-destructive/80"
+                title="Delete"
+              >
+                <Trash class="h-4 w-4" />
+              </Button>
+            </div>
           </TableCell>
         </TableRow>
       </TableBody>
