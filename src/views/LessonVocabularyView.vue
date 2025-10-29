@@ -8,17 +8,53 @@ import {
   courseAPI,
   unitsAPI,
 } from "@/utils/api.js";
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
-import { BookOpen, Plus, X, Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, List } from 'lucide-vue-next'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  BookOpen,
+  Plus,
+  X,
+  Search,
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  List,
+} from "lucide-vue-next";
 
 // State
 const isLoading = ref(false);
@@ -29,6 +65,7 @@ const selectedVocabularySet = ref(null);
 const selectedCourse = ref("all");
 const selectedUnit = ref("all");
 const selectedLevel = ref("all");
+const sortOrder = ref("desc"); // 'asc' or 'desc' for createdAt sorting
 const showAssignModal = ref(false);
 const searchingLessons = ref(false);
 const searchingVocabItems = ref(false);
@@ -61,7 +98,7 @@ const itemsPerPage = ref(10);
 const filteredLessons = computed(() => {
   let result = lessons.value;
 
-  if (selectedCourse.value && selectedCourse.value !== 'all') {
+  if (selectedCourse.value && selectedCourse.value !== "all") {
     // Filter lessons by course through unit relationship
     const courseUnits = units.value.filter(
       (unit) => unit.courseId === selectedCourse.value
@@ -72,11 +109,11 @@ const filteredLessons = computed(() => {
     });
   }
 
-  if (selectedUnit.value && selectedUnit.value !== 'all') {
+  if (selectedUnit.value && selectedUnit.value !== "all") {
     result = result.filter((lesson) => lesson.moduleId === selectedUnit.value);
   }
 
-  if (selectedLevel.value && selectedLevel.value !== 'all') {
+  if (selectedLevel.value && selectedLevel.value !== "all") {
     result = result.filter((lesson) => lesson.level === selectedLevel.value);
   }
 
@@ -100,7 +137,7 @@ const filteredVocabularyItems = computed(() => {
   }
 
   // Filter by level if selected
-  if (selectedLevel.value && selectedLevel.value !== 'all') {
+  if (selectedLevel.value && selectedLevel.value !== "all") {
     items = items.filter((item) => item.level === selectedLevel.value);
   }
 
@@ -115,11 +152,23 @@ const filteredVocabularyItems = computed(() => {
     );
   }
 
+  // Sort by createdAt
+  items.sort((a, b) => {
+    const dateA = new Date(a.created_at || a.createdAt || 0);
+    const dateB = new Date(b.created_at || b.createdAt || 0);
+
+    if (sortOrder.value === "asc") {
+      return dateA - dateB;
+    } else {
+      return dateB - dateA;
+    }
+  });
+
   return items;
 });
 
 const availableUnits = computed(() => {
-  if (!selectedCourse.value || selectedCourse.value === 'all') return [];
+  if (!selectedCourse.value || selectedCourse.value === "all") return [];
   return units.value.filter((unit) => unit.courseId === selectedCourse.value);
 });
 
@@ -359,6 +408,7 @@ watch(
     selectedLevel,
     selectedVocabularySet,
     searchQuery,
+    sortOrder,
   ],
   () => {
     currentPage.value = 1;
@@ -384,7 +434,9 @@ onMounted(async () => {
       <div class="flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-bold">Lesson Vocabulary</h1>
-          <p class="text-muted-foreground">Assign vocabulary items to lessons</p>
+          <p class="text-muted-foreground">
+            Assign vocabulary items to lessons
+          </p>
         </div>
       </div>
     </div>
@@ -394,7 +446,12 @@ onMounted(async () => {
       <AlertCircle class="h-4 w-4" />
       <AlertDescription class="flex items-center justify-between">
         <span>{{ error }}</span>
-        <Button @click="error = ''" variant="ghost" size="sm" class="h-auto p-0">
+        <Button
+          @click="error = ''"
+          variant="ghost"
+          size="sm"
+          class="h-auto p-0"
+        >
           <X class="h-4 w-4" />
         </Button>
       </AlertDescription>
@@ -407,11 +464,7 @@ onMounted(async () => {
           <!-- Search -->
           <div>
             <Label>Search</Label>
-            <Input
-              type="text"
-              v-model="searchQuery"
-              placeholder="Search..."
-            />
+            <Input type="text" v-model="searchQuery" placeholder="Search..." />
           </div>
 
           <!-- Course Filter -->
@@ -454,14 +507,9 @@ onMounted(async () => {
             </Select>
           </div>
 
-
           <!-- Reset Filter Button -->
           <div class="flex items-end">
-            <Button
-              @click="resetFilters"
-              variant="outline"
-              class="w-full"
-            >
+            <Button @click="resetFilters" variant="outline" class="w-full">
               Reset Filters
             </Button>
           </div>
@@ -511,7 +559,9 @@ onMounted(async () => {
               ]"
             >
               <h3 class="font-medium">{{ lesson.title }}</h3>
-              <div class="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+              <div
+                class="flex items-center gap-2 text-sm text-muted-foreground mt-1"
+              >
                 <span>Order: {{ lesson.order || "N/A" }}</span>
                 <span v-if="lesson.level">Level: {{ lesson.level }}</span>
                 <Badge
@@ -519,10 +569,10 @@ onMounted(async () => {
                     lesson.type === 'lesson'
                       ? 'default'
                       : lesson.type === 'practice'
-                        ? 'secondary'
-                        : lesson.type === 'test'
-                          ? 'destructive'
-                          : 'outline'
+                      ? 'secondary'
+                      : lesson.type === 'test'
+                      ? 'destructive'
+                      : 'outline'
                   "
                 >
                   {{ lesson.type || "Unknown" }}
@@ -540,9 +590,7 @@ onMounted(async () => {
             <div class="text-muted-foreground mb-4">
               <BookOpen class="h-16 w-16 mx-auto" />
             </div>
-            <h2 class="text-xl font-medium mb-2">
-              No lesson selected
-            </h2>
+            <h2 class="text-xl font-medium mb-2">No lesson selected</h2>
             <p class="text-muted-foreground">
               Select a lesson from the left panel to view and manage its
               vocabulary
@@ -568,13 +616,15 @@ onMounted(async () => {
 
             <!-- Assigned Vocabulary -->
             <div>
-              <h3 class="text-lg font-medium mb-3">
-                Assigned Vocabulary
-              </h3>
+              <h3 class="text-lg font-medium mb-3">Assigned Vocabulary</h3>
 
               <div v-if="assignmentsLoading" class="text-center py-6">
-                <Loader2 class="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
-                <p class="text-muted-foreground">Loading assigned vocabulary...</p>
+                <Loader2
+                  class="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2"
+                />
+                <p class="text-muted-foreground">
+                  Loading assigned vocabulary...
+                </p>
               </div>
 
               <div
@@ -628,11 +678,16 @@ onMounted(async () => {
     </div>
 
     <!-- Assignment Modal -->
-    <Dialog :open="showAssignModal" @update:open="(open) => !open && closeAssignModal()">
+    <Dialog
+      :open="showAssignModal"
+      @update:open="(open) => !open && closeAssignModal()"
+    >
       <DialogContent class="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Assign Vocabulary to "{{ selectedLesson ? selectedLesson.title : "" }}"
+            Assign Vocabulary to "{{
+              selectedLesson ? selectedLesson.title : ""
+            }}"
           </DialogTitle>
         </DialogHeader>
 
@@ -666,11 +721,25 @@ onMounted(async () => {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Sort by Date</Label>
+              <Select v-model="sortOrder">
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort order" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Newest First</SelectItem>
+                  <SelectItem value="asc">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <!-- Loading State -->
           <div v-if="searchingVocabItems" class="text-center py-8">
-            <Loader2 class="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
+            <Loader2
+              class="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2"
+            />
             <p class="text-muted-foreground">Loading vocabulary items...</p>
           </div>
 
@@ -682,9 +751,7 @@ onMounted(async () => {
             <div class="text-muted-foreground mb-4">
               <Search class="h-16 w-16 mx-auto" />
             </div>
-            <h3 class="text-lg font-medium mb-2">
-              No vocabulary items found
-            </h3>
+            <h3 class="text-lg font-medium mb-2">No vocabulary items found</h3>
             <p class="text-muted-foreground">
               Try adjusting your search or filter criteria
             </p>
@@ -699,12 +766,16 @@ onMounted(async () => {
                     <Checkbox
                       :checked="
                         selectedVocabularyItems.length > 0 &&
-                        selectedVocabularyItems.length === filteredVocabularyItems.length
+                        selectedVocabularyItems.length ===
+                          filteredVocabularyItems.length
                       "
-                      @update:checked="(checked) => 
-                        checked
-                          ? (selectedVocabularyItems = [...filteredVocabularyItems])
-                          : (selectedVocabularyItems = [])
+                      @update:checked="
+                        (checked) =>
+                          checked
+                            ? (selectedVocabularyItems = [
+                                ...filteredVocabularyItems,
+                              ])
+                            : (selectedVocabularyItems = [])
                       "
                     />
                   </TableHead>
@@ -744,12 +815,7 @@ onMounted(async () => {
                     >
                       Selected
                     </Badge>
-                    <Badge
-                      v-else
-                      variant="outline"
-                    >
-                      Not Assigned
-                    </Badge>
+                    <Badge v-else variant="outline"> Not Assigned </Badge>
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -824,11 +890,7 @@ onMounted(async () => {
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            @click="closeAssignModal"
-            variant="outline"
-          >
+          <Button type="button" @click="closeAssignModal" variant="outline">
             Cancel
           </Button>
           <Button
