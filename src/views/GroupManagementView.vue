@@ -673,7 +673,6 @@ onMounted(() => {
                         <TableHead>Date</TableHead>
                         <TableHead>Student</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead class="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -712,23 +711,6 @@ onMounted(() => {
                               record.status === "present" ? "Present" : "Absent"
                             }}
                           </Badge>
-                        </TableCell>
-                        <TableCell class="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            @click="
-                              markAttendance(
-                                record?.id,
-                                record.status === 'present'
-                                  ? 'absent'
-                                  : 'present'
-                              )
-                            "
-                          >
-                            <RotateCcw class="h-4 w-4 mr-2" />
-                            Toggle
-                          </Button>
                         </TableCell>
                       </TableRow>
                     </TableBody>
