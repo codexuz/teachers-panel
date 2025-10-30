@@ -1039,6 +1039,13 @@ export const attendanceAPI = {
       body: JSON.stringify(attendanceData),
     }),
 
+   // Create attendance record
+  createBulk: (attendanceData) =>
+    apiRequest("/attendance/bulk", {
+      method: "POST",
+      body: JSON.stringify(attendanceData),
+    }),
+
   // Update attendance
   update: (id, attendanceData) =>
     apiRequest(`/attendance/${id}`, {
