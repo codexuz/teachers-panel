@@ -1010,6 +1010,10 @@ export const groupStudentsAPI = {
   // Get students by group ID
   getByGroupId: (groupId) => apiRequest(`/group-students/group/${groupId}`),
 
+  // Get student count by teacher ID
+  getTeacherStudentCount: (teacherId) =>
+    apiRequest(`/group-students/teacher/${teacherId}/count`),
+
   // Add student to group
   addToGroup: (groupStudentData) =>
     apiRequest("/group-students", {
@@ -1022,6 +1026,18 @@ export const groupStudentsAPI = {
     apiRequest(`/group-students/${groupStudentId}`, {
       method: "DELETE",
     }),
+};
+
+export const teacherAPI = {
+  // Get teacher balance
+  getBalance: (teacherId) => apiRequest(`/teacher-wallet/teacher/${teacherId}`),
+
+  // Get teacher transaction history
+  getTransactionHistory: (teacherId) =>
+    apiRequest(`/teacher-transaction/teacher/${teacherId}/transactions`),
+
+  // Get teacher info by ID
+  getById: (id) => apiRequest(`/users/teachers/${id}`),
 };
 
 // Attendance API functions
@@ -1039,7 +1055,7 @@ export const attendanceAPI = {
       body: JSON.stringify(attendanceData),
     }),
 
-   // Create attendance record
+  // Create attendance record
   createBulk: (attendanceData) =>
     apiRequest("/attendance/bulk", {
       method: "POST",
