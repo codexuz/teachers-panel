@@ -1,117 +1,168 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { trialLessonsAPI } from '@/utils/api'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  Users, 
-  Calendar, 
-  CheckCircle, 
-  Clock, 
-  Eye, 
-  Book, 
-  ClipboardCheck, 
+import { ref, onMounted, computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { trialLessonsAPI, groupStudentsAPI, teacherAPI } from "@/utils/api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Users,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Eye,
+  Book,
+  ClipboardCheck,
   FileText,
   RefreshCw,
   User,
   Phone,
-  Mail
-} from 'lucide-vue-next'
+  Mail,
+} from "lucide-vue-next";
 
-const authStore = useAuthStore()
-const trialLessons = ref([])
-const isLoading = ref(false)
-const error = ref('')
+const authStore = useAuthStore();
+const trialLessons = ref([]);
+const teacherBalance = ref(0);
+const activeStudentsCount = ref(0);
+const isLoading = ref(false);
+const error = ref("");
 
 // Fetch trial lessons data
 const fetchTrialLessons = async () => {
   if (!authStore.user?.user?.id) {
-    console.error('No teacher ID available')
-    return
+    console.error("No teacher ID available");
+    return;
   }
 
-  isLoading.value = true
-  error.value = ''
+  isLoading.value = true;
+  error.value = "";
 
   try {
-    const data = await trialLessonsAPI.getByTeacherId(authStore.user?.user?.id)
-    trialLessons.value = Array.isArray(data) ? data : []
+    const data = await trialLessonsAPI.getByTeacherId(authStore.user?.user?.id);
+    trialLessons.value = Array.isArray(data) ? data : [];
   } catch (err) {
-    error.value = `Failed to fetch trial lessons: ${err.message}`
-    console.error('Error fetching trial lessons:', err)
-    trialLessons.value = []
+    error.value = `Failed to fetch trial lessons: ${err.message}`;
+    console.error("Error fetching trial lessons:", err);
+    trialLessons.value = [];
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}// Format date for display
+};
+
+// Fetch teacher balance
+const fetchTeacherBalance = async () => {
+  if (!authStore.user?.user?.id) {
+    console.error("No teacher ID available");
+    return;
+  }
+
+  try {
+    const response = await teacherAPI.getBalance(authStore.user?.user?.id);
+    // Handle response format: { amount: 0, ... }
+    teacherBalance.value = response?.amount || 0;
+  } catch (err) {
+    console.error("Error fetching teacher balance:", err);
+    teacherBalance.value = 0;
+  }
+};
+
+// Fetch active students count
+const fetchActiveStudentsCount = async () => {
+  if (!authStore.user?.user?.id) {
+    console.error("No teacher ID available");
+    return;
+  }
+
+  try {
+    const response = await groupStudentsAPI.getTeacherStudentCount(
+      authStore.user?.user?.id
+    );
+    // Handle response format: { count: 18 }
+    activeStudentsCount.value = response?.count || 0;
+  } catch (err) {
+    console.error("Error fetching active students count:", err);
+    activeStudentsCount.value = 0;
+  }
+}; // Format date for display
 const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 // Format time for display
 const formatTime = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 // Get status display text
 const getStatusText = (status) => {
   switch (status?.toLowerCase()) {
-    case 'belgilangan':
-      return 'Scheduled'
-    case 'keldi':
-      return 'Completed'
-    case 'kelmadi':
-      return 'Cancelled'
+    case "belgilangan":
+      return "Scheduled";
+    case "keldi":
+      return "Completed";
+    case "kelmadi":
+      return "Cancelled";
     default:
-      return status || 'Unknown'
+      return status || "Unknown";
   }
-}
+};
 
 // Get badge variant for status
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
-    case 'belgilangan':
-      return 'secondary'
-    case 'keldi':
-      return 'default'
-    case 'kelmadi':
-      return 'destructive'
+    case "belgilangan":
+      return "secondary";
+    case "keldi":
+      return "default";
+    case "kelmadi":
+      return "destructive";
     default:
-      return 'secondary'
+      return "secondary";
   }
-}
+};
 
 // Computed stats
-const totalTrialLessons = computed(() => trialLessons.value.length)
-const scheduledLessons = computed(() =>
-  trialLessons.value.filter(lesson => lesson.status?.toLowerCase() === 'belgilangan').length
-)
-const completedLessons = computed(() =>
-  trialLessons.value.filter(lesson => lesson.status?.toLowerCase() === 'keldi').length
-)
-const inProgressLessons = computed(() =>
-  trialLessons.value.filter(lesson => lesson.status?.toLowerCase() === 'kelmadi').length
-)
+const totalTrialLessons = computed(() => trialLessons.value.length);
+const completedLessons = computed(
+  () =>
+    trialLessons.value.filter(
+      (lesson) => lesson.status?.toLowerCase() === "keldi"
+    ).length
+);
 
 // Lifecycle
 onMounted(() => {
-  fetchTrialLessons()
-})
+  fetchTrialLessons();
+  fetchTeacherBalance();
+  fetchActiveStudentsCount();
+});
 </script>
 
 <template>
@@ -119,13 +170,17 @@ onMounted(() => {
     <!-- Header Section -->
     <div class="space-y-2">
       <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
-      <p class="text-muted-foreground">Welcome back! Here's what's happening in your classes.</p>
+      <p class="text-muted-foreground">
+        Welcome back! Here's what's happening in your classes.
+      </p>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader
+          class="flex flex-row items-center justify-between space-y-0 pb-2"
+        >
           <CardTitle class="text-sm font-medium">Total Trial Lessons</CardTitle>
           <Users class="h-4 w-4 text-muted-foreground" />
         </CardHeader>
@@ -136,75 +191,45 @@ onMounted(() => {
       </Card>
 
       <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">Scheduled</CardTitle>
-          <Calendar class="h-4 w-4 text-muted-foreground" />
+        <CardHeader
+          class="flex flex-row items-center justify-between space-y-0 pb-2"
+        >
+          <CardTitle class="text-sm font-medium">Teacher's Wallet</CardTitle>
+          <FileText class="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">{{ scheduledLessons }}</div>
-          <p class="text-xs text-muted-foreground">Pending lessons</p>
+          <div class="text-2xl font-bold">
+            {{ teacherBalance.toLocaleString() }} UZS
+          </div>
+          <p class="text-xs text-muted-foreground">Current balance</p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">Completed</CardTitle>
+        <CardHeader
+          class="flex flex-row items-center justify-between space-y-0 pb-2"
+        >
+          <CardTitle class="text-sm font-medium">All Active Students</CardTitle>
           <CheckCircle class="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">{{ completedLessons }}</div>
-          <p class="text-xs text-muted-foreground">Finished lessons</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">No Attendance</CardTitle>
-          <Clock class="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">{{ inProgressLessons }}</div>
-          <p class="text-xs text-muted-foreground">Active lessons</p>
+          <div class="text-2xl font-bold">{{ activeStudentsCount }}</div>
+          <p class="text-xs text-muted-foreground">Active students</p>
         </CardContent>
       </Card>
     </div>
 
-
-    <!-- Quick Actions -->
-    <Card>
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-        <CardDescription>Common tasks and shortcuts</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Button variant="outline" class="h-auto p-4 justify-start">
-            <Eye class="h-4 w-4 mr-2" />
-            See Students
-          </Button>
-          <Button variant="outline" class="h-auto p-4 justify-start">
-            <Book class="h-4 w-4 mr-2" />
-            Create Lesson
-          </Button>
-          <Button variant="outline" class="h-auto p-4 justify-start">
-            <ClipboardCheck class="h-4 w-4 mr-2" />
-            Take Attendance
-          </Button>
-          <Button variant="outline" class="h-auto p-4 justify-start">
-            <FileText class="h-4 w-4 mr-2" />
-            Grade Assignment
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-
     <!-- Students Assigned to Trial Lessons -->
     <Card>
       <CardHeader>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0"
+        >
           <div>
             <CardTitle>Trial Lessons Assigned to You</CardTitle>
-            <CardDescription>Manage your scheduled trial lessons</CardDescription>
+            <CardDescription
+              >Manage your scheduled trial lessons</CardDescription
+            >
           </div>
           <div class="flex gap-2">
             <Button
@@ -213,8 +238,10 @@ onMounted(() => {
               variant="outline"
               size="sm"
             >
-              <RefreshCw :class="['h-4 w-4 mr-2', { 'animate-spin': isLoading }]" />
-              {{ isLoading ? 'Loading...' : 'Refresh' }}
+              <RefreshCw
+                :class="['h-4 w-4 mr-2', { 'animate-spin': isLoading }]"
+              />
+              {{ isLoading ? "Loading..." : "Refresh" }}
             </Button>
             <Button size="sm">
               <Eye class="h-4 w-4 mr-2" />
@@ -223,7 +250,9 @@ onMounted(() => {
           </div>
         </div>
         <div v-if="error" class="mt-3">
-          <div class="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+          <div
+            class="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3"
+          >
             {{ error }}
           </div>
         </div>
@@ -231,7 +260,9 @@ onMounted(() => {
       <CardContent class="p-0">
         <!-- Loading State -->
         <div v-if="isLoading" class="p-8 text-center">
-          <RefreshCw class="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <RefreshCw
+            class="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground"
+          />
           <div class="text-muted-foreground">Loading trial lessons...</div>
         </div>
 
@@ -239,7 +270,9 @@ onMounted(() => {
         <div v-else-if="trialLessons.length === 0" class="p-8 text-center">
           <Calendar class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <div class="text-lg font-medium">No trial lessons found</div>
-          <div class="text-sm text-muted-foreground">You don't have any trial lessons assigned yet.</div>
+          <div class="text-sm text-muted-foreground">
+            You don't have any trial lessons assigned yet.
+          </div>
         </div>
 
         <!-- Data Table -->
@@ -260,12 +293,17 @@ onMounted(() => {
                   <div class="flex items-center gap-3">
                     <Avatar class="h-8 w-8">
                       <AvatarFallback>
-                        {{ (lesson.leadInfo?.first_name || 'U').charAt(0).toUpperCase() }}
+                        {{
+                          (lesson.leadInfo?.first_name || "U")
+                            .charAt(0)
+                            .toUpperCase()
+                        }}
                       </AvatarFallback>
                     </Avatar>
                     <div class="space-y-1">
                       <div class="font-medium">
-                        {{ lesson.leadInfo?.first_name }} {{ lesson.leadInfo?.last_name }}
+                        {{ lesson.leadInfo?.first_name }}
+                        {{ lesson.leadInfo?.last_name }}
                       </div>
                       <div class="text-xs text-muted-foreground">
                         ID: {{ lesson.leadInfo?.id }}
@@ -277,29 +315,39 @@ onMounted(() => {
                   <div class="space-y-1">
                     <div class="flex items-center gap-1">
                       <Phone class="h-3 w-3" />
-                      <span class="text-sm">{{ lesson.leadInfo?.phone || 'No phone' }}</span>
+                      <span class="text-sm">{{
+                        lesson.leadInfo?.phone || "No phone"
+                      }}</span>
                     </div>
                     <Badge variant="secondary" class="text-xs">
-                      {{ lesson.leadInfo?.status || 'Unknown' }}
+                      {{ lesson.leadInfo?.status || "Unknown" }}
                     </Badge>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div class="space-y-1">
-                    <div class="text-sm">{{ formatDate(lesson.scheduledAt) }}</div>
-                    <div class="text-xs text-muted-foreground">{{ formatTime(lesson.scheduledAt) }}</div>
+                    <div class="text-sm">
+                      {{ formatDate(lesson.scheduledAt) }}
+                    </div>
+                    <div class="text-xs text-muted-foreground">
+                      {{ formatTime(lesson.scheduledAt) }}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell class="hidden md:table-cell">
                   <Badge variant="outline">
-                    {{ lesson.leadInfo?.status || 'Unknown' }}
+                    {{ lesson.leadInfo?.status || "Unknown" }}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge 
-                    :variant="lesson.status?.toLowerCase() === 'keldi' ? 'default' : 
-                             lesson.status?.toLowerCase() === 'belgilangan' ? 'secondary' : 
-                             'outline'"
+                  <Badge
+                    :variant="
+                      lesson.status?.toLowerCase() === 'keldi'
+                        ? 'default'
+                        : lesson.status?.toLowerCase() === 'belgilangan'
+                        ? 'secondary'
+                        : 'outline'
+                    "
                   >
                     {{ getStatusText(lesson.status) }}
                   </Badge>
@@ -310,14 +358,16 @@ onMounted(() => {
         </div>
       </CardContent>
       <CardFooter>
-        <div class="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between w-full gap-4"
+        >
           <div class="text-sm text-muted-foreground">
-            Showing {{ trialLessons.length }} trial lesson{{ trialLessons.length !== 1 ? 's' : '' }}
+            Showing {{ trialLessons.length }} trial lesson{{
+              trialLessons.length !== 1 ? "s" : ""
+            }}
           </div>
           <div class="flex flex-wrap gap-2">
-            <Badge variant="secondary">{{ scheduledLessons }} Scheduled</Badge>
             <Badge variant="default">{{ completedLessons }} Completed</Badge>
-            <Badge variant="outline">{{ inProgressLessons }} In Progress</Badge>
           </div>
         </div>
       </CardFooter>
