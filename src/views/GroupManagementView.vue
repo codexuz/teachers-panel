@@ -313,8 +313,8 @@ const createAttendance = async () => {
       return;
     }
 
-    // Create attendance records for each student
-    const promises = students.value.map((student) => {
+    // Prepare bulk attendance data for all students
+    const attendanceRecords = students.value.map((student) => {
       // Make sure we have the correct student ID (could be in student_id or id field)
       const studentId = student.user_id || student.id;
 
@@ -322,20 +322,21 @@ const createAttendance = async () => {
         throw new Error(`Student ID is missing for student ${student.name}`);
       }
 
-      const attendanceData = {
+      return {
         student_id: studentId, // Ensure this is a valid UUID
         date: attendanceDate.value,
-        status: attendanceStatuses.value[student.id || studentId] || "present",
+        status:
+          attendanceStatuses.value[student.user_id || studentId] || "present",
         group_id: groupId.value,
         teacher_id: teacherId, // Ensure this is a valid UUID
         note: "",
       };
-
-      console.log("Creating attendance record:", attendanceData);
-      return attendanceAPI.create(attendanceData);
     });
 
-    await Promise.all(promises);
+    console.log("Creating bulk attendance records:", attendanceRecords);
+
+    // Send bulk data to API
+    await attendanceAPI.createBulk(attendanceRecords);
 
     // Refresh the attendance data
     await fetchAttendance();
@@ -748,7 +749,7 @@ onMounted(() => {
           <DialogDescription>
             Select students from the list below to add them to this group.
           </DialogDescription>
-          
+
           <Button
             @click="addStudent"
             :disabled="selectedStudentsToAdd.length === 0"
