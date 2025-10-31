@@ -6,6 +6,7 @@ import {
   ieltsPart1API,
   uploadAPI,
   speakingResponsesAPI,
+  studentsAPI,
 } from "@/utils/api.js";
 
 // Shadcn Components
@@ -303,11 +304,47 @@ const fetchStudentResponses = async () => {
     const speakingId = route.params.id;
     const response = await speakingResponsesAPI.getBySpeakingId(speakingId);
     // The API returns an array directly based on the provided structure
-    studentResponses.value = Array.isArray(response.data)
+    const responses = Array.isArray(response.data)
       ? response.data
       : Array.isArray(response)
       ? response
       : [];
+
+    // Get unique student IDs from responses
+    const uniqueStudentIds = [
+      ...new Set(responses.map((r) => r.student_id).filter(Boolean)),
+    ];
+
+    // Fetch student data for all unique student IDs
+    const studentPromises = uniqueStudentIds.map(async (studentId) => {
+      try {
+        const studentData = await studentsAPI.getById(studentId);
+        return { id: studentId, data: studentData };
+      } catch (err) {
+        console.error(`Error fetching student ${studentId}:`, err);
+        return { id: studentId, data: null };
+      }
+    });
+
+    const studentResults = await Promise.all(studentPromises);
+
+    // Create a map of student ID to student data
+    const studentsMap = studentResults.reduce((acc, result) => {
+      if (result.data) {
+        acc[result.id] = result.data;
+      }
+      return acc;
+    }, {});
+
+    // Merge student data with responses
+    studentResponses.value = responses.map((response) => ({
+      ...response,
+      student: studentsMap[response.student_id] || {
+        first_name: "Unknown",
+        last_name: "Student",
+        username: "N/A",
+      },
+    }));
   } catch (err) {
     console.error("Error fetching student responses:", err);
     studentResponses.value = [];
