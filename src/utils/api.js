@@ -1092,3 +1092,65 @@ export const speakingResponsesAPI = {
       method: "DELETE",
     }),
 };
+
+// Exams API functions
+export const examsAPI = {
+  // Get all exams for a teacher
+  getByTeacherId: (teacherId) => apiRequest(`/exams/teacher/${teacherId}`),
+
+  // Get a single exam by ID
+  getById: (id) => apiRequest(`/exams/${id}`),
+
+  // Create new exam
+  create: (examData) =>
+    apiRequest("/exams", {
+      method: "POST",
+      body: JSON.stringify(examData),
+    }),
+
+  // Update exam
+  update: (id, examData) =>
+    apiRequest(`/exams/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(examData),
+    }),
+
+  // Delete exam
+  delete: (id) =>
+    apiRequest(`/exams/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Exam Results API functions
+export const examResultsAPI = {
+  // Get all results for a specific exam
+  getByExamId: (examId) => apiRequest(`/exam-results/exam/${examId}`),
+
+  // Get a single exam result by ID
+  getById: (id) => apiRequest(`/exam-results/${id}`),
+
+  // Get results by student ID
+  getByStudentId: (studentId) =>
+    apiRequest(`/exam-results/student/${studentId}`),
+
+  // Create/post new exam result
+  create: (resultData) =>
+    apiRequest("/exam-results", {
+      method: "POST",
+      body: JSON.stringify(resultData),
+    }),
+
+  // Update exam result
+  update: (id, resultData) =>
+    apiRequest(`/exam-results/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(resultData),
+    }),
+
+  // Delete exam result
+  delete: (id) =>
+    apiRequest(`/exam-results/${id}`, {
+      method: "DELETE",
+    }),
+};

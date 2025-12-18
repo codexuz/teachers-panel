@@ -32,6 +32,7 @@ import {
   ClipboardList,
   PenTool,
   CheckCircle,
+  FileText,
 } from "lucide-vue-next";
 
 const router = useRouter();
@@ -69,6 +70,12 @@ const navigation = {
       url: "/homework-check",
       icon: CheckCircle,
       isActive: (path) => path.startsWith("/homework-check"),
+    },
+    {
+      title: "Exams",
+      url: "/exams",
+      icon: FileText,
+      isActive: (path) => path === "/exams",
     },
   ],
   content: [

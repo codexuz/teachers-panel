@@ -32,7 +32,7 @@ const router = createRouter({
           component: () => import("../views/CoursesView.vue"),
           meta: { requiresAuth: true },
         },
-         {
+        {
           path: "/javlon/courses",
           name: "javlon-courses",
           component: () => import("../views/javlon/CoursesView.vue"),
@@ -44,7 +44,7 @@ const router = createRouter({
           component: () => import("../views/UnitsView.vue"),
           meta: { requiresAuth: true },
         },
-         {
+        {
           path: "/javlon/units",
           name: "javlon-units",
           component: () => import("../views/javlon/UnitsView.vue"),
@@ -56,7 +56,7 @@ const router = createRouter({
           component: () => import("../views/LessonsView.vue"),
           meta: { requiresAuth: true },
         },
-         {
+        {
           path: "/javlon/lessons",
           name: "javlon-lessons",
           component: () => import("../views/javlon/LessonsView.vue"),
@@ -168,6 +168,12 @@ const router = createRouter({
           path: "/exams",
           name: "exams",
           component: () => import("../views/ExamsView.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/exam-results",
+          name: "exam-results",
+          component: () => import("../views/ExamResultsView.vue"),
           meta: { requiresAuth: true },
         },
         {
