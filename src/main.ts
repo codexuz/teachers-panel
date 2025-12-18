@@ -17,6 +17,7 @@ app.component('QuillEditor', QuillEditor)
 const pinia = createPinia()
 app.use(pinia)
 app.use(router)
+
 // @ts-ignore
 app.use(OneSignalVuePlugin, {
     appId: '62c40ef3-658a-4e7a-b790-4d5af464c1d5',

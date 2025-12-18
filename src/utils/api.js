@@ -1154,3 +1154,32 @@ export const examResultsAPI = {
       method: "DELETE",
     }),
 };
+
+// Articles API functions
+export const articlesAPI = {
+  // Get all articles
+  getAll: () => apiRequest("/articles"),
+
+  // Get a single article by ID
+  getById: (id) => apiRequest(`/articles/${id}`),
+
+  // Create new article
+  create: (articleData) =>
+    apiRequest("/articles", {
+      method: "POST",
+      body: JSON.stringify(articleData),
+    }),
+
+  // Update article
+  update: (id, articleData) =>
+    apiRequest(`/articles/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(articleData),
+    }),
+
+  // Delete article
+  delete: (id) =>
+    apiRequest(`/articles/${id}`, {
+      method: "DELETE",
+    }),
+};

@@ -124,6 +124,12 @@ const navigation = {
       isActive: (path) => path === "/library",
     },
     {
+      title: "Articles",
+      url: "/articles",
+      icon: FileText,
+      isActive: (path) => path === "/articles",
+    },
+    {
       title: "Vocabulary",
       url: "/vocabulary",
       icon: BookOpen,
