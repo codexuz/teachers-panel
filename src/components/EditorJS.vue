@@ -8,7 +8,7 @@ import EmbedTool from "@editorjs/embed";
 import ListTool from "@editorjs/list";
 import AttachesTool from "@editorjs/attaches";
 import AudioPlayer from "editorjs-audio-player";
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch, toRaw } from "vue";
 
 const htmlelement = ref(null);
 
@@ -35,7 +35,9 @@ function modelToView() {
     editor.blocks.renderFromHTML(props.modelValue);
     return;
   }
-  editor.render(props.modelValue);
+  // Convert reactive objects to plain objects to avoid cloning issues
+  const plainData = JSON.parse(JSON.stringify(toRaw(props.modelValue)));
+  editor.render(plainData);
 }
 
 // view -> model
@@ -103,6 +105,11 @@ onMounted(() => {
     tools.audioPlayer = AudioPlayer;
   }
 
+  // Convert reactive data to plain object before passing to EditorJS
+  const initialData = props.modelValue
+    ? JSON.parse(JSON.stringify(toRaw(props.modelValue)))
+    : undefined;
+
   editor = new EditorJS({
     holder: htmlelement.value,
     placeholder: props.placeholder,
@@ -110,8 +117,10 @@ onMounted(() => {
     tools: tools,
     readOnly: props.readOnly,
     minHeight: 0,
-    data: props.modelValue,
-    onReady: modelToView,
+    data: initialData,
+    onReady: () => {
+      // Editor is ready, no need to call modelToView since data is already passed
+    },
     onChange: viewToModel,
   });
 });
@@ -150,7 +159,6 @@ onUnmounted(() => {
 
 /* Adjust block content to make room for left toolbar */
 .editorjs :deep(.ce-block__content) {
-  margin-left: 60px;
   margin-right: 0;
 }
 

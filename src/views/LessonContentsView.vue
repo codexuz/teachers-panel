@@ -7,8 +7,7 @@ import {
   courseAPI,
   uploadAPI,
 } from "@/utils/api.js";
-import { QuillEditor } from "@vueup/vue-quill";
-import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import EditorJS from "@/components/EditorJS.vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,6 +97,7 @@ const form = reactive({
   mediaFile: null,
   resources: [], // Array of resource URLs
   resourceFiles: [], // Array of files to upload for resources
+  resourceType: "none", // 'url', 'upload', 'none'
   order_number: 1,
   lessonId: "",
   isActive: true,
@@ -266,6 +266,13 @@ const openEditModal = (content) => {
   form.isActive = content.isActive;
   form.resources = content.resources || [];
 
+  // Determine resource type based on existing data
+  if (form.resources.length > 0) {
+    form.resourceType = "url";
+  } else {
+    form.resourceType = "none";
+  }
+
   // Determine media type based on existing data
   if (content.mediaUrl) {
     if (
@@ -282,13 +289,19 @@ const openEditModal = (content) => {
     form.mediaType = "none";
   }
 
-  // Set the selected filters for the modal
-  const lesson = lessons.value.find((l) => l.id === content.lessonId);
+  // Set the selected filters for the modal - handle both string and number IDs
+  const lesson = lessons.value.find(
+    (l) => l.id === content.lessonId || l.id === String(content.lessonId)
+  );
   if (lesson) {
-    const unit = units.value.find((u) => u.id === lesson.moduleId);
+    const unit = units.value.find(
+      (u) => u.id === lesson.moduleId || u.id === String(lesson.moduleId)
+    );
     if (unit) {
       modalSelectedUnit.value = unit.id;
       modalSelectedCourse.value = unit.courseId;
+    } else {
+      resetModalSelections();
     }
   } else {
     resetModalSelections();
@@ -312,6 +325,7 @@ const resetForm = () => {
   form.mediaFile = null;
   form.resources = [];
   form.resourceFiles = [];
+  form.resourceType = "none";
   form.order_number = 1;
   form.lessonId = "";
   form.isActive = true;
@@ -1110,7 +1124,7 @@ watch(modalSelectedUnit, () => {
         }
       "
     >
-      <DialogContent class="sm:max-w-[80%] max-h-[90vh] overflow-y-auto">
+      <DialogContent class="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {{ isEditMode ? "Edit Content" : "Create New Content" }}
@@ -1145,100 +1159,100 @@ watch(modalSelectedUnit, () => {
               Lesson <span class="text-destructive">*</span>
             </Label>
 
-            <!-- Course Selection -->
-            <div class="space-y-2">
-              <Label for="course" class="text-sm text-muted-foreground"
-                >Course</Label
-              >
-              <Select v-model="modalSelectedCourse">
-                <SelectTrigger id="course">
-                  <SelectValue placeholder="Select Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Courses</SelectItem>
-                  <SelectItem
-                    v-for="course in courses"
-                    :key="course.id"
-                    :value="course.id"
-                  >
-                    {{ course.name || course.title || "Unnamed Course" }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div class="flex gap-4">
+              <!-- Course Selection -->
+              <div class="space-y-2 flex-1">
+                <Label for="course" class="text-sm text-muted-foreground"
+                  >Course</Label
+                >
+                <Select v-model="modalSelectedCourse">
+                  <SelectTrigger id="course">
+                    <SelectValue placeholder="Select Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Courses</SelectItem>
+                    <SelectItem
+                      v-for="course in courses"
+                      :key="course.id"
+                      :value="course.id"
+                    >
+                      {{ course.name || course.title || "Unnamed Course" }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <!-- Unit Selection -->
-            <div class="space-y-2">
-              <Label for="unit" class="text-sm text-muted-foreground"
-                >Unit</Label
-              >
-              <Select
-                v-model="modalSelectedUnit"
-                :disabled="
-                  !modalSelectedCourse || modalSelectedCourse === 'all'
-                "
-              >
-                <SelectTrigger
-                  id="unit"
+              <!-- Unit Selection -->
+              <div class="space-y-2 flex-1">
+                <Label for="unit" class="text-sm text-muted-foreground"
+                  >Unit</Label
+                >
+                <Select
+                  v-model="modalSelectedUnit"
                   :disabled="
                     !modalSelectedCourse || modalSelectedCourse === 'all'
                   "
                 >
-                  <SelectValue placeholder="Select Unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Units</SelectItem>
-                  <SelectItem
-                    v-for="unit in modalAvailableUnits"
-                    :key="unit.id"
-                    :value="unit.id"
+                  <SelectTrigger
+                    id="unit"
+                    :disabled="
+                      !modalSelectedCourse || modalSelectedCourse === 'all'
+                    "
                   >
-                    {{ unit.title }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                    <SelectValue placeholder="Select Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Units</SelectItem>
+                    <SelectItem
+                      v-for="unit in modalAvailableUnits"
+                      :key="unit.id"
+                      :value="unit.id"
+                    >
+                      {{ unit.title }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <!-- Lesson Selection -->
-            <div class="space-y-2">
-              <Label for="lessonSelect" class="text-sm text-muted-foreground"
-                >Select Lesson</Label
-              >
-              <Select
-                v-model="form.lessonId"
-                :disabled="!modalSelectedUnit || modalSelectedUnit === 'all'"
-                required
-              >
-                <SelectTrigger
-                  id="lessonSelect"
-                  :disabled="!modalSelectedUnit || modalSelectedUnit === 'all'"
+              <!-- Lesson Selection -->
+              <div class="space-y-2 flex-1">
+                <Label for="lessonSelect" class="text-sm text-muted-foreground"
+                  >Select Lesson</Label
                 >
-                  <SelectValue placeholder="Select Lesson" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="lesson in modalAvailableLessons"
-                    :key="lesson.id"
-                    :value="lesson.id"
+                <Select
+                  v-model="form.lessonId"
+                  :disabled="!modalSelectedUnit || modalSelectedUnit === 'all'"
+                  required
+                >
+                  <SelectTrigger
+                    id="lessonSelect"
+                    :disabled="
+                      !modalSelectedUnit || modalSelectedUnit === 'all'
+                    "
                   >
-                    {{ lesson.title }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                    <SelectValue placeholder="Select Lesson" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="lesson in modalAvailableLessons"
+                      :key="lesson.id"
+                      :value="lesson.id"
+                    >
+                      {{ lesson.title }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <!-- Content Field with Quill Editor -->
+          <!-- Content Field with EditorJS -->
           <div class="space-y-2">
             <Label> Content </Label>
-            <QuillEditor
-              v-model:content="form.content"
-              theme="snow"
-              toolbar="full"
-              contentType="html"
-              class="bg-background"
-              :style="{ minHeight: '200px' }"
+            <EditorJS
+              v-model="form.content"
               placeholder="Enter detailed content..."
+              class="bg-background border text-left rounded-md p-4"
             />
           </div>
 
@@ -1405,56 +1419,58 @@ watch(modalSelectedUnit, () => {
             />
           </div>
 
-          <!-- Order Number -->
-          <div class="space-y-2">
-            <Label for="order">Order Number</Label>
-            <Input
-              id="order"
-              type="number"
-              v-model="form.order_number"
-              min="1"
-            />
-          </div>
-
           <!-- Resources Section -->
           <div class="space-y-4">
             <Label class="text-base font-medium"> Resources </Label>
 
-            <!-- Existing Resource URLs -->
-            <div v-if="form.resources.length > 0" class="space-y-2">
-              <Label class="text-sm text-muted-foreground"
-                >Current Resources</Label
-              >
-              <div class="space-y-2">
-                <div
-                  v-for="(resource, index) in form.resources"
-                  :key="index"
-                  class="flex items-center justify-between p-2 bg-muted rounded border"
-                >
-                  <a
-                    :href="resource"
-                    target="_blank"
-                    class="text-primary hover:underline truncate flex-1 mr-2"
-                  >
-                    {{ resource }}
-                  </a>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    @click="removeResourceUrl(index)"
-                  >
-                    <X class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
+            <!-- Resource Type Selection -->
+            <div class="space-y-2">
+              <Label>Resource Type</Label>
+              <Select v-model="form.resourceType">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select resource type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Resources</SelectItem>
+                  <SelectItem value="url">Resource URL</SelectItem>
+                  <SelectItem value="upload">Upload Files</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <!-- Add Resource URL -->
-            <div class="space-y-2">
-              <Label class="text-sm text-muted-foreground"
-                >Add Resource URL</Label
-              >
+            <!-- Resource URL Input -->
+            <div v-if="form.resourceType === 'url'" class="space-y-2">
+              <!-- Existing Resource URLs -->
+              <div v-if="form.resources.length > 0" class="space-y-2">
+                <Label class="text-sm text-muted-foreground"
+                  >Current Resources</Label
+                >
+                <div class="space-y-2">
+                  <div
+                    v-for="(resource, index) in form.resources"
+                    :key="index"
+                    class="flex items-center justify-between p-2 bg-muted rounded border"
+                  >
+                    <a
+                      :href="resource"
+                      target="_blank"
+                      class="text-primary hover:underline truncate flex-1 mr-2"
+                    >
+                      {{ resource }}
+                    </a>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      @click="removeResourceUrl(index)"
+                    >
+                      <X class="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Resource URL -->
               <Button
                 type="button"
                 variant="outline"
@@ -1467,10 +1483,7 @@ watch(modalSelectedUnit, () => {
             </div>
 
             <!-- Upload Resource Files -->
-            <div class="space-y-2">
-              <Label class="text-sm text-muted-foreground"
-                >Upload Resource Files</Label
-              >
+            <div v-if="form.resourceType === 'upload'" class="space-y-2">
               <div class="border-2 border-dashed rounded-lg p-4 text-center">
                 <input
                   type="file"
@@ -1532,18 +1545,6 @@ watch(modalSelectedUnit, () => {
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Status -->
-          <div class="flex items-center space-x-2">
-            <Checkbox
-              id="isActive"
-              :checked="form.isActive"
-              @update:checked="form.isActive = $event"
-            />
-            <Label for="isActive" class="font-normal cursor-pointer">
-              Active
-            </Label>
           </div>
 
           <!-- Modal Footer -->
