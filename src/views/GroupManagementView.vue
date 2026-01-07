@@ -619,6 +619,7 @@ onMounted(() => {
                       >Track student attendance for this group</CardDescription
                     >
                   </div>
+                  <!---------
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
@@ -631,6 +632,7 @@ onMounted(() => {
                       </Button>
                     </DialogTrigger>
                   </Dialog>
+                  ---------->
                 </div>
 
                 <!-- Date Range Selection -->
